@@ -1,0 +1,283 @@
+<UserControl x:Class="QldtSdh.Wpf.Views.OperationsDashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:QldtSdh.Wpf.Views"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             mc:Ignorable="d" 
+             d:DesignHeight="750" d:DesignWidth="1100"
+             Background="#0B0F0D">
+
+    <UserControl.Resources>
+        <!-- Converter -->
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <!-- Style resources -->
+        <Style x:Key="KpiCardButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A1D1A" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="#2D322D" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="Margin" Value="0,0,10,10" />
+            <Setter Property="Width" Value="200" />
+            <Setter Property="Height" Value="90" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Title}" Foreground="#94A3B8" FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding Value}" Foreground="#F8FAFC" FontSize="22" FontWeight="Bold" Margin="0,4,0,0" />
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#2D322D" />
+                                <Setter Property="BorderBrush" Value="#22C55E" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SectionBorder" TargetType="Border">
+            <Setter Property="Background" Value="#1A1D1A" />
+            <Setter Property="BorderBrush" Value="#2D322D" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="16" />
+        </Style>
+
+        <Style x:Key="ActionBtn" TargetType="Button">
+            <Setter Property="Background" Value="#22C55E" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="6" />
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#16A34A" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" /> <!-- Header -->
+                <RowDefinition Height="Auto" /> <!-- KPI Cards WrapPanel -->
+                <RowDefinition Height="Auto" /> <!-- Charts (2 columns) -->
+                <RowDefinition Height="*" />    <!-- Drill-down Table -->
+            </Grid.RowDefinitions>
+
+            <!-- 1. Header -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                <TextBlock Text="Trung tâm Điều hành Hệ thống (Operations Dashboard)" 
+                           Foreground="#F8FAFC" FontSize="28" FontWeight="Bold" Margin="0,0,0,6"/>
+                <TextBlock Text="Thống kê hiệu quả hoạt động đào tạo, tình trạng học phí, đề tài nghiên cứu sau đại học" 
+                           Foreground="#94A3B8" FontSize="14" />
+            </StackPanel>
+
+            <!-- 2. KPI Cards WrapPanel -->
+            <ItemsControl Grid.Row="1" 
+                          ItemsSource="{Binding Kpis}" 
+                          Margin="0,0,0,16">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Style="{StaticResource KpiCardButton}"
+                                Command="{Binding DataContext.DrillDownCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                CommandParameter="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- 3. Charts Area -->
+            <Grid Grid.Row="2" Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Student Status Chart -->
+                <Border Grid.Column="0" Style="{StaticResource SectionBorder}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Biểu đồ phân bố trạng thái học vụ" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,0,0,12" />
+                        <lvc:CartesianChart Series="{Binding StatusColumnSeries}" 
+                                            XAxes="{Binding XAxes}" 
+                                            Height="220" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Active Cases Chart -->
+                <Border Grid.Column="1" Style="{StaticResource SectionBorder}" Margin="12,0,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Biểu đồ trạng thái xử lý sự vụ (Case)" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,0,0,12" />
+                        <lvc:PieChart Series="{Binding CasePieSeries}" 
+                                      Height="220" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- 4. Drill-Down Grid -->
+            <Border Grid.Row="3" Style="{StaticResource SectionBorder}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <TextBlock Text="{Binding SelectedKpiTitle}" 
+                                   Foreground="White" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+                        <Button Content="Xuất báo cáo CSV" 
+                                Command="{Binding ExportDrillDownCsvCommand}" 
+                                Style="{StaticResource ActionBtn}"
+                                HorizontalAlignment="Right" />
+                    </Grid>
+
+                    <!-- Students Drilldown list -->
+                    <DataGrid Grid.Row="1" 
+                               ItemsSource="{Binding DrillDownStudents}"
+                               Visibility="{Binding IsShowStudentsDrillDown, Converter={StaticResource BoolToVis}}"
+                               AutoGenerateColumns="False" 
+                               CanUserAddRows="False"
+                               IsReadOnly="True"
+                               Background="Transparent"
+                               BorderThickness="0"
+                               GridLinesVisibility="Horizontal"
+                               HorizontalGridLinesBrush="#2D322D"
+                               RowBackground="#1A1D1A"
+                               AlternatingRowBackground="#0B0F0D"
+                               Foreground="#E2E8F0"
+                               FontSize="13"
+                               RowHeight="38"
+                               MaxHeight="300"
+                               VerticalScrollBarVisibility="Auto">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#1A1D1A" />
+                                <Setter Property="Foreground" Value="#94A3B8" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                <Setter Property="BorderBrush" Value="#2D322D" />
+                                <Setter Property="Padding" Value="10,6" />
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="BorderThickness" Value="0" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridCell">
+                                            <Border Padding="10,0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                                <ContentPresenter VerticalAlignment="Center" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Mã học viên" Binding="{Binding StudentCode}" Width="150" FontWeight="SemiBold" Foreground="#22C55E" />
+                            <DataGridTextColumn Header="Họ và tên" Binding="{Binding FullName}" Width="*" />
+                            <DataGridTextColumn Header="Ngày sinh" Binding="{Binding DOB, StringFormat={}{0:dd/MM/yyyy}}" Width="150" />
+                            <DataGridTextColumn Header="Chương trình học" Binding="{Binding ProgrammeName}" Width="300" />
+                            <DataGridTextColumn Header="Trạng thái" Binding="{Binding CurrentStatus}" Width="120" />
+                            <DataGridTemplateColumn Header="Hành động" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="Xem hồ sơ" 
+                                                Command="{Binding DataContext.ViewStudentProfileCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource TableActionButton}" 
+                                                HorizontalAlignment="Center" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Cases Drilldown list -->
+                    <DataGrid Grid.Row="1" 
+                               ItemsSource="{Binding DrillDownCases}"
+                               Visibility="{Binding IsShowCasesDrillDown, Converter={StaticResource BoolToVis}}"
+                               AutoGenerateColumns="False" 
+                               CanUserAddRows="False"
+                               IsReadOnly="True"
+                               Background="Transparent"
+                               BorderThickness="0"
+                               GridLinesVisibility="Horizontal"
+                               HorizontalGridLinesBrush="#2D322D"
+                               RowBackground="#1A1D1A"
+                               AlternatingRowBackground="#0B0F0D"
+                               Foreground="#E2E8F0"
+                               FontSize="13"
+                               RowHeight="38"
+                               MaxHeight="300"
+                               VerticalScrollBarVisibility="Auto">
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="Background" Value="#1A1D1A" />
+                                <Setter Property="Foreground" Value="#94A3B8" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                <Setter Property="BorderBrush" Value="#2D322D" />
+                                <Setter Property="Padding" Value="10,6" />
+                            </Style>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="BorderThickness" Value="0" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridCell">
+                                            <Border Padding="10,0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                                <ContentPresenter VerticalAlignment="Center" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.Resources>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Mã Case" Binding="{Binding CaseCode}" Width="120" FontWeight="Bold" Foreground="#22C55E" />
+                            <DataGridTextColumn Header="Loại sự vụ" Binding="{Binding CaseType}" Width="110" />
+                            <DataGridTextColumn Header="Tiêu đề yêu cầu" Binding="{Binding Title}" Width="*" />
+                            <DataGridTextColumn Header="Học viên" Binding="{Binding StudentName}" Width="180" />
+                            <DataGridTextColumn Header="Người phụ trách" Binding="{Binding Assignee, TargetNullValue='Chưa phân công'}" Width="150" />
+                            <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="110" FontWeight="Bold" />
+                            <DataGridTextColumn Header="Hạn xử lý" Binding="{Binding DueDate, StringFormat={}{0:dd/MM/yyyy}, TargetNullValue='Không có'}" Width="120" />
+                            <DataGridTemplateColumn Header="Hành động" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="Xử lý Case" 
+                                                Command="{Binding DataContext.ProcessCaseCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource TableActionButton}" 
+                                                HorizontalAlignment="Center" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

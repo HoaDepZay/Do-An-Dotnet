@@ -1,0 +1,46 @@
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleasePublic/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio cache/options directory
+.vs/
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Mono Class Library
+*.dll
+*.exe
+*.pdb
+
+## OS metadata
+.DS_Store
+Thumbs.db
+
+## IDE/Editor specific
+.idea/
+.vscode/
+*.suo
+*.ntvsca
+*.njsproj
+*.sln.docstates
+
+## Gemini Agent configurations and logs
+.gemini/
+.system_generated/
+antigravity/
+*.log

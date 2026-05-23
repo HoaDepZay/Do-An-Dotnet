@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../backend/QldtSdh.Shared/QldtSdh.Shared.csproj" />
+  <Project Path="QldtSdh.Wpf/QldtSdh.Wpf.csproj" />
+</Solution>

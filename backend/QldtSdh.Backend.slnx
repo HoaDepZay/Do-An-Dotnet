@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DbMigrator/DbMigrator.csproj" />
+  <Project Path="QldtSdh.Data/QldtSdh.Data.csproj" />
+  <Project Path="QldtSdh.Shared/QldtSdh.Shared.csproj" />
+  <Project Path="QldtSdh.WebApi/QldtSdh.WebApi.csproj" />
+</Solution>

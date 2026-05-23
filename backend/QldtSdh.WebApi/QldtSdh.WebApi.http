@@ -1,0 +1,6 @@
+@QldtSdh.WebApi_HostAddress = http://localhost:5118
+
+GET {{QldtSdh.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
