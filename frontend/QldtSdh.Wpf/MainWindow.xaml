@@ -13,6 +13,8 @@
         Background="#0B0F0D">
 
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
         <!-- Mapping ViewModels to Views -->
         <DataTemplate DataType="{x:Type vm:GlobalSearchViewModel}">
             <views:GlobalSearchView />
@@ -28,6 +30,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:SnapshotHistoryViewModel}">
             <views:SnapshotHistoryView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:UserManagementViewModel}">
+            <views:UserManagementView />
         </DataTemplate>
 
         <!-- Sidebar Navigation Button Style -->
@@ -93,15 +98,11 @@
                             Margin="20,0">
                     <!-- Custom clean icon shape -->
                     <Border Width="36" Height="36" 
-                            Background="#22C55E" 
-                            CornerRadius="8" 
+                            CornerRadius="18" 
                             Margin="0,0,12,0">
-                        <TextBlock Text="360" 
-                                   Foreground="White" 
-                                   FontWeight="Bold" 
-                                   FontSize="13" 
-                                   HorizontalAlignment="Center" 
-                                   VerticalAlignment="Center"/>
+                        <Border.Background>
+                            <ImageBrush ImageSource="hinh-dai-dien.ico" Stretch="UniformToFill"/>
+                        </Border.Background>
                     </Border>
                     <StackPanel>
                         <TextBlock Text="ĐIỀU HÀNH 360°" 
@@ -132,6 +133,11 @@
                     <RadioButton Content="💾   Lịch Sử Snapshots" 
                                  Command="{Binding NavigateToSnapshotsCommand}"
                                  Style="{StaticResource NavButton}" />
+
+                    <RadioButton Content="👤   Quản Lý Người Dùng" 
+                                 Command="{Binding NavigateToUserManagementCommand}"
+                                 Visibility="{Binding IsAdminVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                 Style="{StaticResource NavButton}" />
                 </StackPanel>
 
                 <!-- Footer User Profile card -->
@@ -146,13 +152,14 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         
-                        <Border Width="36" Height="36" 
+                        <Border Grid.Column="0" Width="36" Height="36" 
                                 Background="#16A34A" 
                                 CornerRadius="18" 
                                 Margin="0,0,10,0">
-                            <TextBlock Text="AD" 
+                            <TextBlock Text="{Binding CurrentUserInitials}" 
                                        Foreground="White" 
                                        FontWeight="Bold" 
                                        FontSize="12" 
@@ -161,14 +168,33 @@
                         </Border>
                         
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="Administrator" 
+                            <TextBlock Text="{Binding CurrentUserName}" 
                                        Foreground="#F8FAFC" 
                                        FontWeight="SemiBold" 
-                                       FontSize="13" />
-                            <TextBlock Text="Cán bộ quản lý" 
+                                       FontSize="13" 
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{Binding CurrentUserRole}" 
                                        Foreground="#64748B" 
                                        FontSize="11" />
                         </StackPanel>
+
+                        <!-- Logout Button -->
+                        <Button Grid.Column="2" 
+                                Command="{Binding LogoutCommand}"
+                                ToolTip="Đăng xuất khỏi hệ thống"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                VerticalAlignment="Center"
+                                Margin="5,0,0,0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="Transparent" Padding="5">
+                                        <TextBlock Text="🚪" FontSize="16" Foreground="#EF4444" />
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                     </Grid>
                 </Border>
             </Grid>

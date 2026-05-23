@@ -22,12 +22,17 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="hinh-dai-dien.ico" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>hinh-dai-dien.ico</ApplicationIcon>
   </PropertyGroup>
 
 </Project>

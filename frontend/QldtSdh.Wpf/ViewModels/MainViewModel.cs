@@ -3,22 +3,48 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using QldtSdh.Shared;
+using QldtSdh.Wpf.Services;
 
 namespace QldtSdh.Wpf.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly SessionService _sessionService;
 
         [ObservableProperty]
         private object? _currentView;
 
         [ObservableProperty]
-        private string _activeMenu = "Search"; // e.g. Search, Dashboard, Cases, Snapshots
+        private string _activeMenu = "Search"; // e.g. Search, Dashboard, Cases, Snapshots, UserManagement
 
-        public MainViewModel(IServiceProvider serviceProvider)
+        public bool IsAdminVisible => _sessionService.IsAdmin;
+        public string CurrentUserName => _sessionService.FullName;
+        public string CurrentUserRole => _sessionService.RoleCode == "ADMIN" ? "Quản trị viên hệ thống" : "Cán bộ đào tạo";
+        
+        public string CurrentUserInitials
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(CurrentUserName)) return "CB";
+                var parts = CurrentUserName.Trim().Split(' ');
+                if (parts.Length >= 2)
+                {
+                    var first = parts[0];
+                    var last = parts[parts.Length - 1];
+                    if (first.Length > 0 && last.Length > 0)
+                    {
+                        return (first[0].ToString() + last[0].ToString()).ToUpper();
+                    }
+                }
+                return CurrentUserName.Substring(0, Math.Min(2, CurrentUserName.Length)).ToUpper();
+            }
+        }
+
+        public MainViewModel(IServiceProvider serviceProvider, SessionService sessionService)
         {
             _serviceProvider = serviceProvider;
+            _sessionService = sessionService;
             
             // Set default view to Global Search
             NavigateToSearch();
@@ -57,6 +83,35 @@ namespace QldtSdh.Wpf.ViewModels
         {
             CurrentView = _serviceProvider.GetRequiredService<SnapshotHistoryViewModel>();
             ActiveMenu = "Snapshots";
+        }
+
+        [RelayCommand]
+        public void NavigateToUserManagement()
+        {
+            var vm = _serviceProvider.GetRequiredService<UserManagementViewModel>();
+            _ = vm.LoadUsersAsync();
+            CurrentView = vm;
+            ActiveMenu = "UserManagement";
+        }
+
+        [RelayCommand]
+        public void Logout()
+        {
+            _sessionService.ClearSession();
+            
+            // Open LoginWindow
+            var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
+            loginWindow.Show();
+            
+            // Close MainWindow
+            foreach (System.Windows.Window window in System.Windows.Application.Current.Windows)
+            {
+                if (window is MainWindow)
+                {
+                    window.Close();
+                    break;
+                }
+            }
         }
 
         // Method to navigate directly to a student's 360 profile

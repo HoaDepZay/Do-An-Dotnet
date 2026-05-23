@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using QldtSdh.Data.Models;
 
 namespace QldtSdh.Data
@@ -11,6 +12,58 @@ namespace QldtSdh.Data
         {
             // Ensure database is created
             context.Database.EnsureCreated();
+
+            // Ensure roles and users tables are created in existing DB
+            CreateTablesIfNotExist(context);
+
+            // Seed Roles
+            if (!context.Roles.Any())
+            {
+                var adminRole = new Role { RoleCode = "ADMIN", RoleName = "Quản trị viên" };
+                var staffRole = new Role { RoleCode = "STAFF", RoleName = "Cán bộ đào tạo" };
+                context.Roles.AddRange(adminRole, staffRole);
+                context.SaveChanges();
+            }
+
+            // Seed Users
+            if (!context.Users.Any())
+            {
+                var adminRole = context.Roles.First(r => r.RoleCode == "ADMIN");
+                var staffRole = context.Roles.First(r => r.RoleCode == "STAFF");
+
+                var usersToSeed = new List<User>
+                {
+                    new User
+                    {
+                        Username = "admin",
+                        PasswordHash = HashPassword("admin123"),
+                        FullName = "Quản trị viên",
+                        Email = "admin@qldtsdh.edu.vn",
+                        RoleId = adminRole.RoleId,
+                        IsActive = true
+                    },
+                    new User
+                    {
+                        Username = "canboA",
+                        PasswordHash = HashPassword("canbo123"),
+                        FullName = "Cán bộ A",
+                        Email = "canboa@qldtsdh.edu.vn",
+                        RoleId = staffRole.RoleId,
+                        IsActive = true
+                    },
+                    new User
+                    {
+                        Username = "canboB",
+                        PasswordHash = HashPassword("canbo123"),
+                        FullName = "Cán bộ B",
+                        Email = "canbob@qldtsdh.edu.vn",
+                        RoleId = staffRole.RoleId,
+                        IsActive = true
+                    }
+                };
+                context.Users.AddRange(usersToSeed);
+                context.SaveChanges();
+            }
 
             // Look for any students.
             if (context.Students.Any())
@@ -398,6 +451,55 @@ namespace QldtSdh.Data
             }
 
             context.SaveChanges();
+        }
+
+        private static void CreateTablesIfNotExist(QldtSdhDbContext context)
+        {
+            // Create Roles table if not exists
+            context.Database.ExecuteSqlRaw(@"
+                IF OBJECT_ID('Roles', 'U') IS NULL
+                BEGIN
+                    CREATE TABLE Roles (
+                        RoleId INT IDENTITY(1,1) PRIMARY KEY,
+                        RoleCode NVARCHAR(50) NOT NULL,
+                        RoleName NVARCHAR(100) NOT NULL
+                    );
+                    CREATE UNIQUE INDEX IX_Roles_RoleCode ON Roles(RoleCode);
+                END
+            ");
+
+            // Create Users table if not exists
+            context.Database.ExecuteSqlRaw(@"
+                IF OBJECT_ID('Users', 'U') IS NULL
+                BEGIN
+                    CREATE TABLE Users (
+                        UserId INT IDENTITY(1,1) PRIMARY KEY,
+                        Username NVARCHAR(50) NOT NULL,
+                        PasswordHash NVARCHAR(256) NOT NULL,
+                        FullName NVARCHAR(100) NOT NULL,
+                        Email NVARCHAR(100) NULL,
+                        RoleId INT NOT NULL,
+                        IsActive BIT NOT NULL DEFAULT 1,
+                        CreatedAt DATETIME NOT NULL DEFAULT GETUTCDATE(),
+                        CONSTRAINT FK_Users_Roles_RoleId FOREIGN KEY (RoleId) REFERENCES Roles(RoleId) ON DELETE NO ACTION
+                    );
+                    CREATE UNIQUE INDEX IX_Users_Username ON Users(Username);
+                END
+            ");
+        }
+
+        private static string HashPassword(string password)
+        {
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                var bytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                var builder = new System.Text.StringBuilder();
+                foreach (var b in bytes)
+                {
+                    builder.Append(b.ToString("x2"));
+                }
+                return builder.ToString();
+            }
         }
     }
 }

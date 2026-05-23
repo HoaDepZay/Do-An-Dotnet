@@ -34,25 +34,29 @@ namespace QldtSdh.Wpf
             var apiBaseAddress = configuration["ApiSettings:BaseAddress"] 
                                  ?? "http://localhost:5000/api/";
             
+            serviceCollection.AddSingleton<SessionService>();
             serviceCollection.AddSingleton(new HttpClient { BaseAddress = new Uri(apiBaseAddress) });
             serviceCollection.AddSingleton<ApiService>();
 
             // Register ViewModels
+            serviceCollection.AddTransient<LoginViewModel>();
             serviceCollection.AddSingleton<MainViewModel>();
             serviceCollection.AddSingleton<GlobalSearchViewModel>();
             serviceCollection.AddSingleton<Student360ViewModel>();
             serviceCollection.AddSingleton<CaseBoardViewModel>();
             serviceCollection.AddSingleton<OperationsDashboardViewModel>();
             serviceCollection.AddSingleton<SnapshotHistoryViewModel>();
+            serviceCollection.AddSingleton<UserManagementViewModel>();
 
             // Register Views
+            serviceCollection.AddTransient<LoginWindow>();
             serviceCollection.AddTransient<MainWindow>();
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
-            // 3. Start Application
-            var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-            mainWindow.Show();
+            // 3. Start Application with LoginWindow
+            var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
+            loginWindow.Show();
         }
     }
 }

@@ -27,6 +27,8 @@ namespace QldtSdh.Data
         public virtual DbSet<CaseNote> CaseNotes { get; set; } = null!;
         public virtual DbSet<DashboardSnapshot> DashboardSnapshots { get; set; } = null!;
         public virtual DbSet<SearchAudit> SearchAudits { get; set; } = null!;
+        public virtual DbSet<User> Users { get; set; } = null!;
+        public virtual DbSet<Role> Roles { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -218,6 +220,33 @@ namespace QldtSdh.Data
                     .WithMany()
                     .HasForeignKey(d => d.StudentId)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Role configuration
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.HasKey(e => e.RoleId);
+                entity.Property(e => e.RoleCode).IsRequired().HasMaxLength(50);
+                entity.HasIndex(e => e.RoleCode).IsUnique();
+                entity.Property(e => e.RoleName).IsRequired().HasMaxLength(100);
+            });
+
+            // User configuration
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(e => e.UserId);
+                entity.Property(e => e.Username).IsRequired().HasMaxLength(50);
+                entity.HasIndex(e => e.Username).IsUnique();
+                entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(256);
+                entity.Property(e => e.FullName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Email).HasMaxLength(100);
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasOne(d => d.Role)
+                    .WithMany(p => p.Users)
+                    .HasForeignKey(d => d.RoleId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }
