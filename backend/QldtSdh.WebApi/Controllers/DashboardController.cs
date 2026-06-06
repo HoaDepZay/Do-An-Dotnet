@@ -85,8 +85,27 @@ namespace QldtSdh.WebApi.Controllers
                         .ToList();
                     query = query.Where(s => thesisStudentIds.Contains(s.StudentId));
                     break;
+                case "GRADUATED_GPA_AVG":
+                    var gradedStudentIds = _context.Grades
+                        .Include(g => g.Enrollment)
+                        .Where(g => g.Enrollment != null && g.Enrollment.EnrollStatus == "Completed")
+                        .Select(g => g.Enrollment!.StudentId)
+                        .Distinct()
+                        .ToList();
+                    query = query.Where(s => gradedStudentIds.Contains(s.StudentId));
+                    break;
+                case "DEFENCE_SCORE_AVG":
+                    var defendedStudentIds = _context.DefenceResults
+                        .Include(d => d.ThesisTopic)
+                        .Where(d => d.ThesisTopic != null)
+                        .Select(d => d.ThesisTopic!.StudentId)
+                        .Distinct()
+                        .ToList();
+                    query = query.Where(s => defendedStudentIds.Contains(s.StudentId));
+                    break;
                 default:
-                    // For GPA or Defence Score average, just return students with grades
+                    // Return empty query if KPI key not matched
+                    query = query.Where(s => false);
                     break;
             }
 
@@ -102,6 +121,19 @@ namespace QldtSdh.WebApi.Controllers
                     CurrentStatus = s.CurrentStatus
                 })
                 .ToList();
+
+            var gpas = CalculateAllStudentsGpa();
+            var debts = CalculateAllStudentsDebt();
+            var theses = GetActiveThesisTopics();
+            var defenceScores = GetDefenceScores();
+
+            foreach (var student in students)
+            {
+                if (gpas.TryGetValue(student.StudentId, out var gpa)) student.GPA = gpa;
+                if (debts.TryGetValue(student.StudentId, out var debt)) student.TuitionDebt = debt;
+                if (theses.TryGetValue(student.StudentId, out var thesis)) student.ThesisTitle = thesis;
+                if (defenceScores.TryGetValue(student.StudentId, out var defScore)) student.DefenceScore = defScore;
+            }
 
             return Ok(students);
         }
@@ -372,6 +404,89 @@ namespace QldtSdh.WebApi.Controllers
             });
 
             return list;
+        }
+
+        private Dictionary<int, double> CalculateAllStudentsGpa()
+        {
+            var completedGrades = _context.Grades
+                .Include(g => g.Enrollment)
+                .Where(g => g.Enrollment != null && g.Enrollment.EnrollStatus == "Completed")
+                .ToList();
+
+            var gpaDict = new Dictionary<int, double>();
+            if (completedGrades.Any())
+            {
+                var groupedByStudent = completedGrades.GroupBy(g => g.Enrollment!.StudentId);
+                foreach (var studentGroup in groupedByStudent)
+                {
+                    var studentId = studentGroup.Key;
+                    var groupedByEnroll = studentGroup.GroupBy(g => g.EnrollmentId);
+                    double totalScoreWeight = 0;
+                    int totalCredits = 0;
+
+                    foreach (var group in groupedByEnroll)
+                    {
+                        var firstEnroll = group.First().Enrollment!;
+                        var courseScore = group.Sum(g => g.Score * g.Weight);
+                        totalScoreWeight += courseScore * firstEnroll.Credits;
+                        totalCredits += firstEnroll.Credits;
+                    }
+
+                    if (totalCredits > 0)
+                    {
+                        gpaDict[studentId] = Math.Round(totalScoreWeight / totalCredits, 2);
+                    }
+                }
+            }
+            return gpaDict;
+        }
+
+        private Dictionary<int, decimal> CalculateAllStudentsDebt()
+        {
+            var invoices = _context.Invoices.Where(i => i.Status != "Draft").Include(i => i.Payments).ToList();
+            var debtDict = new Dictionary<int, decimal>();
+            foreach (var group in invoices.GroupBy(i => i.StudentId))
+            {
+                var studentId = group.Key;
+                decimal totalDebt = 0;
+                foreach (var inv in group)
+                {
+                    var paid = inv.Payments.Sum(p => p.Amount);
+                    totalDebt += (inv.TotalAmount - paid);
+                }
+                if (totalDebt > 0)
+                {
+                    debtDict[studentId] = totalDebt;
+                }
+            }
+            return debtDict;
+        }
+
+        private Dictionary<int, string> GetActiveThesisTopics()
+        {
+            var list = _context.ThesisTopics
+                .Where(t => t.Status == "InProgress" || t.Status == "Approved")
+                .ToList();
+            var dict = new Dictionary<int, string>();
+            foreach (var t in list)
+            {
+                dict[t.StudentId] = t.Title;
+            }
+            return dict;
+        }
+
+        private Dictionary<int, double> GetDefenceScores()
+        {
+            var list = _context.DefenceResults
+                .Include(d => d.ThesisTopic)
+                .Where(d => d.ThesisTopic != null)
+                .ToList();
+            var dict = new Dictionary<int, double>();
+            foreach (var d in list)
+            {
+                dict[d.ThesisTopic!.StudentId] = d.FinalScore;
+            }
+            return dict;
         }
     }
 }

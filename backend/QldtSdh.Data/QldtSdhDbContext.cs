@@ -36,7 +36,7 @@ namespace QldtSdh.Data
             {
                 // Fallback connection string for local development / migrations
                 // Azure SQL Server will be configured at runtime or through this string
-                optionsBuilder.UseSqlServer("Server=tcp:quan-tri-nha-su.database.windows.net,1433;Initial Catalog=HE-THONG-QUAN-TRI-306;User ID=CloudSAe02b7603;Password=31052006Hoa*;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
+                optionsBuilder.UseSqlServer("Server=100.109.65.2,1433;Initial Catalog=HE-THONG-QUAN-TRI-306;User ID=sa;Password=31052006Hoa*;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;");
             }
         }
 

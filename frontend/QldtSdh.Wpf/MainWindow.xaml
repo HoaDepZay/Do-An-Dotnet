@@ -10,7 +10,7 @@
         Title="Trung tâm điều hành và hồ sơ học viên 360° - QLĐT Sau đại học" 
         Height="768" Width="1366"
         WindowStartupLocation="CenterScreen"
-        Background="#0B0F0D">
+        Background="{DynamicResource ThemeBlackBrush}">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
@@ -35,42 +35,6 @@
             <views:UserManagementView />
         </DataTemplate>
 
-        <!-- Sidebar Navigation Button Style -->
-        <Style x:Key="NavButton" TargetType="RadioButton">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="#94A3B8" />
-            <Setter Property="FontSize" Value="14" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Height" Value="46" />
-            <Setter Property="Margin" Value="0,4" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="border" 
-                                Background="{TemplateBinding Background}" 
-                                BorderBrush="Transparent"
-                                BorderThickness="4,0,0,0"
-                                Padding="16,0,0,0"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter VerticalAlignment="Center" 
-                                              HorizontalAlignment="Left" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#262A26" />
-                                <Setter Property="Foreground" Value="#F8FAFC" />
-                            </Trigger>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#262A26" />
-                                <Setter TargetName="border" Property="BorderBrush" Value="#22C55E" />
-                                <Setter Property="Foreground" Value="#22C55E" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Window.Resources>
 
     <Grid>
@@ -81,8 +45,8 @@
 
         <!-- 1. Sidebar Panel -->
         <Border Grid.Column="0" 
-                Background="#1A1D1A" 
-                BorderBrush="#2D322D" 
+                Background="{DynamicResource PanelDarkBrush}" 
+                BorderBrush="{DynamicResource BorderDarkBrush}" 
                 BorderThickness="0,0,1,0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -106,11 +70,11 @@
                     </Border>
                     <StackPanel>
                         <TextBlock Text="ĐIỀU HÀNH 360°" 
-                                   Foreground="#F8FAFC" 
+                                   Foreground="{DynamicResource TextWhiteBrush}" 
                                    FontWeight="Bold" 
                                    FontSize="15"/>
                         <TextBlock Text="Sau đại học - Nhóm 13" 
-                                   Foreground="#64748B" 
+                                   Foreground="{DynamicResource TextMutedBrush}" 
                                    FontSize="11" />
                     </StackPanel>
                 </StackPanel>
@@ -140,63 +104,76 @@
                                  Style="{StaticResource NavButton}" />
                 </StackPanel>
 
-                <!-- Footer User Profile card -->
-                <Border Grid.Row="2" 
-                        Background="#0B0F0D" 
-                        Margin="16" 
-                        Padding="12" 
-                        CornerRadius="8"
-                        BorderBrush="#2D322D"
-                        BorderThickness="1">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        
-                        <Border Grid.Column="0" Width="36" Height="36" 
-                                Background="#16A34A" 
-                                CornerRadius="18" 
-                                Margin="0,0,10,0">
-                            <TextBlock Text="{Binding CurrentUserInitials}" 
-                                       Foreground="White" 
-                                       FontWeight="Bold" 
-                                       FontSize="12" 
-                                       HorizontalAlignment="Center" 
-                                       VerticalAlignment="Center" />
-                        </Border>
-                        
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding CurrentUserName}" 
-                                       Foreground="#F8FAFC" 
-                                       FontWeight="SemiBold" 
-                                       FontSize="13" 
-                                       TextTrimming="CharacterEllipsis"/>
-                            <TextBlock Text="{Binding CurrentUserRole}" 
-                                       Foreground="#64748B" 
-                                       FontSize="11" />
+                <!-- Footer Theme Switcher & User Profile card -->
+                <StackPanel Grid.Row="2" Margin="16" VerticalAlignment="Bottom">
+                    <!-- Light/Dark Mode Switcher Button -->
+                    <Button Command="{Binding ToggleThemeCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            Height="38"
+                            Margin="0,0,0,12"
+                            HorizontalAlignment="Stretch">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding ThemeToggleIcon}" Margin="0,0,8,0" FontSize="14" />
+                            <TextBlock Text="{Binding ThemeToggleText}" VerticalAlignment="Center" FontSize="12" />
                         </StackPanel>
+                    </Button>
 
-                        <!-- Logout Button -->
-                        <Button Grid.Column="2" 
-                                Command="{Binding LogoutCommand}"
-                                ToolTip="Đăng xuất khỏi hệ thống"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Cursor="Hand"
-                                VerticalAlignment="Center"
-                                Margin="5,0,0,0">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="Transparent" Padding="5">
-                                        <TextBlock Text="🚪" FontSize="16" Foreground="#EF4444" />
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                    </Grid>
-                </Border>
+                    <!-- User Profile Card -->
+                    <Border Background="{DynamicResource ThemeBlackBrush}" 
+                            Padding="12" 
+                            CornerRadius="8"
+                            BorderBrush="{DynamicResource BorderDarkBrush}"
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            
+                            <Border Grid.Column="0" Width="36" Height="36" 
+                                    Background="#16A34A" 
+                                    CornerRadius="18" 
+                                    Margin="0,0,10,0">
+                                <TextBlock Text="{Binding CurrentUserInitials}" 
+                                           Foreground="White" 
+                                           FontWeight="Bold" 
+                                           FontSize="12" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center" />
+                            </Border>
+                            
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding CurrentUserName}" 
+                                           Foreground="{DynamicResource TextWhiteBrush}" 
+                                           FontWeight="SemiBold" 
+                                           FontSize="13" 
+                                           TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding CurrentUserRole}" 
+                                           Foreground="{DynamicResource TextMutedBrush}" 
+                                           FontSize="11" />
+                            </StackPanel>
+                            
+                            <!-- Logout Button -->
+                            <Button Grid.Column="2" 
+                                    Command="{Binding LogoutCommand}"
+                                    ToolTip="Đăng xuất khỏi hệ thống"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    VerticalAlignment="Center"
+                                    Margin="5,0,0,0">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="Transparent" Padding="5">
+                                            <TextBlock Text="🚪" FontSize="16" Foreground="#EF4444" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </StackPanel>
             </Grid>
         </Border>
 

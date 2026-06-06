@@ -41,13 +41,33 @@ namespace QldtSdh.Wpf.ViewModels
             }
         }
 
+        [ObservableProperty]
+        private string _themeToggleIcon = "☀️";
+
+        [ObservableProperty]
+        private string _themeToggleText = "Giao diện Sáng";
+
         public MainViewModel(IServiceProvider serviceProvider, SessionService sessionService)
         {
             _serviceProvider = serviceProvider;
             _sessionService = sessionService;
+            _sessionService.SessionChanged += OnSessionChanged;
             
             // Set default view to Global Search
             NavigateToSearch();
+        }
+
+        private void OnSessionChanged()
+        {
+            OnPropertyChanged(nameof(IsAdminVisible));
+            OnPropertyChanged(nameof(CurrentUserName));
+            OnPropertyChanged(nameof(CurrentUserRole));
+            OnPropertyChanged(nameof(CurrentUserInitials));
+
+            if (_sessionService.IsLoggedIn)
+            {
+                NavigateToSearch();
+            }
         }
 
         [RelayCommand]
@@ -88,6 +108,7 @@ namespace QldtSdh.Wpf.ViewModels
         [RelayCommand]
         public void NavigateToUserManagement()
         {
+            if (!_sessionService.IsAdmin) return;
             var vm = _serviceProvider.GetRequiredService<UserManagementViewModel>();
             _ = vm.LoadUsersAsync();
             CurrentView = vm;
@@ -111,6 +132,24 @@ namespace QldtSdh.Wpf.ViewModels
                     window.Close();
                     break;
                 }
+            }
+        }
+
+        [RelayCommand]
+        public void ToggleTheme()
+        {
+            var app = (App)System.Windows.Application.Current;
+            app.IsDarkMode = !app.IsDarkMode;
+            
+            if (app.IsDarkMode)
+            {
+                ThemeToggleIcon = "☀️";
+                ThemeToggleText = "Giao diện Sáng";
+            }
+            else
+            {
+                ThemeToggleIcon = "🌙";
+                ThemeToggleText = "Giao diện Tối";
             }
         }
 

@@ -1,0 +1,16 @@
+services:
+  webapi:
+    build:
+      context: .
+      dockerfile: QldtSdh.WebApi/Dockerfile
+    container_name: qldtsdh-webapi
+    restart: always
+    ports:
+      - "5118:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION}
+      - JwtSettings__SecretKey=${JWT_SECRET}
+      - JwtSettings__Issuer=QldtSdh.WebApi
+      - JwtSettings__Audience=QldtSdh.Wpf
+      - JwtSettings__ExpiryInMinutes=480

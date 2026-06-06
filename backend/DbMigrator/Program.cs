@@ -8,9 +8,9 @@ namespace DbMigrator
         static void Main(string[] args)
         {
             Console.WriteLine("====================================================");
-            Console.WriteLine("BẮT ĐẦU TRIỂN KHAI CÁC BẢNG LÊN AZURE SQL DATABASE...");
+            Console.WriteLine("BẮT ĐẦU TRIỂN KHAI CÁC BẢNG LÊN SQL SERVER...");
             Console.WriteLine("====================================================");
-            Console.WriteLine("Server: quan-tri-nha-su.database.windows.net");
+            Console.WriteLine("Server: 100.109.65.2,1433");
             Console.WriteLine("Database: HE-THONG-QUAN-TRI-306");
             Console.WriteLine("Kết nối và khởi tạo cấu trúc dữ liệu...");
 

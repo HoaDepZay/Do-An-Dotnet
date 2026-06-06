@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QldtSdh.Data;
@@ -11,6 +12,7 @@ namespace QldtSdh.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "ADMIN, STAFF")]
     public class StudentController : ControllerBase
     {
         private readonly QldtSdhDbContext _context;
@@ -66,7 +68,7 @@ namespace QldtSdh.WebApi.Controllers
                 {
                     _context.SearchAudits.Add(new SearchAudit
                     {
-                        UserName = Request.Headers["X-User-Name"].ToString() ?? "Admin",
+                        UserName = System.Net.WebUtility.UrlDecode(Request.Headers["X-User-Name"].ToString() ?? "Admin"),
                         Keyword = search,
                         SearchedAt = DateTime.Now
                     });
@@ -238,7 +240,7 @@ namespace QldtSdh.WebApi.Controllers
             {
                 _context.SearchAudits.Add(new SearchAudit
                 {
-                    UserName = Request.Headers["X-User-Name"].ToString() ?? "Admin",
+                    UserName = System.Net.WebUtility.UrlDecode(Request.Headers["X-User-Name"].ToString() ?? "Admin"),
                     Keyword = $"Xem hồ sơ HV: {student.StudentCode}",
                     StudentId = student.StudentId,
                     SearchedAt = DateTime.Now
@@ -248,6 +250,282 @@ namespace QldtSdh.WebApi.Controllers
             catch { /* Ignore audit logging errors */ }
 
             return Ok(profile);
+        }
+
+        // POST: api/student
+        [HttpPost]
+        public ActionResult<StudentDto> CreateStudent([FromBody] CreateStudentRequest request)
+        {
+            if (request == null) return BadRequest("Dữ liệu học viên bị trống.");
+            if (string.IsNullOrWhiteSpace(request.StudentCode)) return BadRequest("Mã học viên không được để trống.");
+            if (string.IsNullOrWhiteSpace(request.FullName)) return BadRequest("Họ và tên không được để trống.");
+
+            var studentCode = request.StudentCode.Trim().ToUpper();
+            if (_context.Students.Any(s => s.StudentCode == studentCode))
+            {
+                return BadRequest($"Mã học viên '{studentCode}' đã tồn tại trong hệ thống.");
+            }
+
+            var student = new Student
+            {
+                StudentCode = studentCode,
+                FullName = request.FullName.Trim(),
+                DOB = request.DOB,
+                ProgrammeName = request.ProgrammeName ?? "Khoa học máy tính",
+                CurrentStatus = request.CurrentStatus ?? "Studying"
+            };
+
+            _context.Students.Add(student);
+            _context.SaveChanges();
+
+            return Ok(new StudentDto
+            {
+                StudentId = student.StudentId,
+                StudentCode = student.StudentCode,
+                FullName = student.FullName,
+                DOB = student.DOB,
+                ProgrammeName = student.ProgrammeName,
+                CurrentStatus = student.CurrentStatus
+            });
+        }
+
+        // PUT: api/student/{id}
+        [HttpPut("{id}")]
+        public IActionResult UpdateStudent(int id, [FromBody] UpdateStudentRequest request)
+        {
+            if (request == null) return BadRequest("Dữ liệu cập nhật bị trống.");
+            if (string.IsNullOrWhiteSpace(request.FullName)) return BadRequest("Họ và tên không được để trống.");
+
+            var student = _context.Students.Find(id);
+            if (student == null)
+            {
+                return NotFound("Không tìm thấy học viên.");
+            }
+
+            student.FullName = request.FullName.Trim();
+            student.DOB = request.DOB;
+            student.ProgrammeName = request.ProgrammeName ?? "Khoa học máy tính";
+            student.CurrentStatus = request.CurrentStatus ?? "Studying";
+
+            _context.SaveChanges();
+
+            return NoContent();
+        }
+
+        // POST: api/student/bulk
+        [HttpPost("bulk")]
+        public ActionResult<BulkImportResultDto> CreateStudentsBulk([FromBody] List<CreateStudentRequest> requests)
+        {
+            if (requests == null || !requests.Any()) return BadRequest("Dữ liệu danh sách nhập bị trống.");
+
+            int successCount = 0;
+            var errors = new List<string>();
+
+            // Get existing student codes to prevent DB roundtrips in loop
+            var existingCodes = _context.Students.Select(s => s.StudentCode).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var req in requests)
+            {
+                if (string.IsNullOrWhiteSpace(req.StudentCode))
+                {
+                    errors.Add("Học viên bị thiếu mã.");
+                    continue;
+                }
+                if (string.IsNullOrWhiteSpace(req.FullName))
+                {
+                    errors.Add($"Học viên '{req.StudentCode}' bị thiếu họ và tên.");
+                    continue;
+                }
+
+                var studentCode = req.StudentCode.Trim().ToUpper();
+                if (existingCodes.Contains(studentCode))
+                {
+                    errors.Add($"Mã học viên '{studentCode}' đã tồn tại.");
+                    continue;
+                }
+
+                try
+                {
+                    var student = new Student
+                    {
+                        StudentCode = studentCode,
+                        FullName = req.FullName.Trim(),
+                        DOB = req.DOB,
+                        ProgrammeName = string.IsNullOrWhiteSpace(req.ProgrammeName) ? "Khoa học máy tính" : req.ProgrammeName.Trim(),
+                        CurrentStatus = string.IsNullOrWhiteSpace(req.CurrentStatus) ? "Studying" : req.CurrentStatus.Trim()
+                    };
+
+                    _context.Students.Add(student);
+                    existingCodes.Add(studentCode); // track locally for duplicates within the file itself
+                    successCount++;
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Lỗi khi thêm học viên '{studentCode}': {ex.Message}");
+                }
+            }
+
+            if (successCount > 0)
+            {
+                _context.SaveChanges();
+            }
+
+            return Ok(new BulkImportResultDto
+            {
+                SuccessCount = successCount,
+                TotalCount = requests.Count,
+                Errors = errors
+            });
+        }
+
+        // POST: api/student/5/enrollment
+        [HttpPost("{id}/enrollment")]
+        public ActionResult AddEnrollment(int id, [FromBody] AddEnrollmentRequest request)
+        {
+            var student = _context.Students.Find(id);
+            if (student == null) return NotFound("Không tìm thấy học viên.");
+            if (string.IsNullOrWhiteSpace(request.CourseCode)) return BadRequest("Mã môn học không được để trống.");
+            if (string.IsNullOrWhiteSpace(request.CourseName)) return BadRequest("Tên môn học không được để trống.");
+
+            var enrollment = new Enrollment
+            {
+                StudentId = id,
+                CourseCode = request.CourseCode.Trim().ToUpper(),
+                CourseName = request.CourseName.Trim(),
+                Credits = request.Credits,
+                EnrollStatus = request.EnrollStatus,
+                EnrolledAt = DateTime.Now
+            };
+
+            _context.Enrollments.Add(enrollment);
+            _context.SaveChanges(); // Save to generate EnrollmentId
+
+            // Add grades
+            var grade1 = new Grade { EnrollmentId = enrollment.EnrollmentId, ComponentName = "Chuyên cần", Score = request.PracticeScore, Weight = 0.1, GradeStatus = "Approved" };
+            var grade2 = new Grade { EnrollmentId = enrollment.EnrollmentId, ComponentName = "Giữa kỳ", Score = request.MidtermScore, Weight = 0.3, GradeStatus = "Approved" };
+            var grade3 = new Grade { EnrollmentId = enrollment.EnrollmentId, ComponentName = "Cuối kỳ", Score = request.FinalScore, Weight = 0.6, GradeStatus = "Approved" };
+
+            _context.Grades.AddRange(grade1, grade2, grade3);
+            _context.SaveChanges();
+
+            return Ok(new { Message = "Thêm kết quả học tập thành công!" });
+        }
+
+        // POST: api/student/5/invoice
+        [HttpPost("{id}/invoice")]
+        public ActionResult AddInvoice(int id, [FromBody] AddInvoiceRequest request)
+        {
+            var student = _context.Students.Find(id);
+            if (student == null) return NotFound("Không tìm thấy học viên.");
+            if (string.IsNullOrWhiteSpace(request.Semester)) return BadRequest("Học kỳ không được để trống.");
+            if (string.IsNullOrWhiteSpace(request.InvoiceNo)) return BadRequest("Số hóa đơn không được để trống.");
+
+            var invoiceNo = request.InvoiceNo.Trim().ToUpper();
+            if (_context.Invoices.Any(i => i.InvoiceNo == invoiceNo))
+            {
+                return BadRequest($"Số hóa đơn '{invoiceNo}' đã tồn tại.");
+            }
+
+            var invoice = new Invoice
+            {
+                StudentId = id,
+                Semester = request.Semester.Trim(),
+                InvoiceNo = invoiceNo,
+                TotalAmount = request.TotalAmount,
+                Status = request.Status,
+                DueDate = request.DueDate
+            };
+
+            _context.Invoices.Add(invoice);
+            _context.SaveChanges();
+
+            if (request.AmountPaid > 0)
+            {
+                var payment = new Payment
+                {
+                    InvoiceId = invoice.InvoiceId,
+                    PaymentNo = "PAY-" + DateTime.Now.ToString("yyyyMMdd") + "-" + new Random().Next(1000, 9999),
+                    Amount = request.AmountPaid,
+                    PaidAt = DateTime.Now,
+                    Method = "BankTransfer"
+                };
+                _context.Payments.Add(payment);
+                _context.SaveChanges();
+            }
+
+            return Ok(new { Message = "Tạo hóa đơn học phí thành công!" });
+        }
+
+        // POST: api/student/5/thesis
+        [HttpPost("{id}/thesis")]
+        public ActionResult AddThesis(int id, [FromBody] AddThesisTopicRequest request)
+        {
+            var student = _context.Students.Find(id);
+            if (student == null) return NotFound("Không tìm thấy học viên.");
+            if (string.IsNullOrWhiteSpace(request.TopicCode)) return BadRequest("Mã đề tài không được để trống.");
+            if (string.IsNullOrWhiteSpace(request.Title)) return BadRequest("Tên đề tài không được để trống.");
+
+            var topicCode = request.TopicCode.Trim().ToUpper();
+            if (_context.ThesisTopics.Any(t => t.TopicCode == topicCode))
+            {
+                return BadRequest($"Mã đề tài '{topicCode}' đã tồn tại.");
+            }
+
+            var topic = new ThesisTopic
+            {
+                StudentId = id,
+                TopicCode = topicCode,
+                Title = request.Title.Trim(),
+                AdvisorName = request.AdvisorName.Trim(),
+                Status = request.Status
+            };
+
+            _context.ThesisTopics.Add(topic);
+            _context.SaveChanges();
+
+            if (request.FinalScore.HasValue)
+            {
+                var result = new DefenceResult
+                {
+                    TopicId = topic.TopicId,
+                    FinalScore = request.FinalScore.Value,
+                    ResultStatus = request.FinalScore.Value >= 5.0 ? "Pass" : "Fail",
+                    DefenceDate = request.DefenceDate ?? DateTime.Now
+                };
+                _context.DefenceResults.Add(result);
+                _context.SaveChanges();
+            }
+
+            return Ok(new { Message = "Thêm đề tài nghiên cứu thành công!" });
+        }
+
+        // POST: api/student/5/degree
+        [HttpPost("{id}/degree")]
+        [Authorize(Roles = "ADMIN")]
+        public ActionResult AddDegree(int id, [FromBody] AddDegreeRequest request)
+        {
+            var student = _context.Students.Find(id);
+            if (student == null) return NotFound("Không tìm thấy học viên.");
+            if (string.IsNullOrWhiteSpace(request.DegreeNumber)) return BadRequest("Số hiệu văn bằng không được để trống.");
+
+            var degreeNumber = request.DegreeNumber.Trim().ToUpper();
+            if (_context.Degrees.Any(d => d.DegreeNumber == degreeNumber))
+            {
+                return BadRequest($"Số hiệu văn bằng '{degreeNumber}' đã tồn tại.");
+            }
+
+            var degree = new Degree
+            {
+                StudentId = id,
+                DegreeNumber = degreeNumber,
+                IssueDate = request.IssueDate,
+                Status = request.Status
+            };
+
+            _context.Degrees.Add(degree);
+            _context.SaveChanges();
+
+            return Ok(new { Message = "Cấp phát văn bằng thành công!" });
         }
     }
 }

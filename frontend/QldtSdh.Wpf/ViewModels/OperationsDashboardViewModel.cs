@@ -35,6 +35,9 @@ namespace QldtSdh.Wpf.ViewModels
         public bool IsShowStudentsDrillDown => !IsShowCasesDrillDown;
 
         [ObservableProperty]
+        private KpiDto? _selectedKpi;
+
+        [ObservableProperty]
         private string _selectedKpiTitle = "Chọn KPI để xem chi tiết học viên";
 
         // LiveCharts2 Series
@@ -108,6 +111,13 @@ namespace QldtSdh.Wpf.ViewModels
                             OuterRadiusOffset = 0
                         }
                     };
+
+                    // Auto select the first KPI for drill-down at startup
+                    var firstKpi = list.FirstOrDefault();
+                    if (firstKpi != null)
+                    {
+                        _ = DrillDownAsync(firstKpi);
+                    }
                 }
             }
             catch (Exception ex)
@@ -121,6 +131,7 @@ namespace QldtSdh.Wpf.ViewModels
         {
             if (kpi == null) return;
 
+            SelectedKpi = kpi;
             bool isCaseKpi = kpi.Key == "CASES_ACTIVE" || kpi.Key == "CASES_OVERDUE";
             SelectedKpiTitle = isCaseKpi ? $"Chi tiết sự vụ: {kpi.Title}" : $"Chi tiết học viên: {kpi.Title}";
 

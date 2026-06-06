@@ -6,13 +6,15 @@
              xmlns:local="clr-namespace:QldtSdh.Wpf.Views"
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="1100"
-             Background="#0B0F0D">
+             Background="{DynamicResource ThemeBlackBrush}">
 
     <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
         <!-- Style resources for layout -->
         <Style x:Key="KpiCardBorder" TargetType="Border">
-            <Setter Property="Background" Value="#1A1D1A" />
-            <Setter Property="BorderBrush" Value="#2D322D" />
+            <Setter Property="Background" Value="{DynamicResource PanelDarkBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderDarkBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Padding" Value="20,16" />
@@ -20,8 +22,8 @@
         </Style>
 
         <Style x:Key="BackButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="#2D322D" />
-            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="Background" Value="{DynamicResource BorderDarkBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextWhiteBrush}" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Padding" Value="14,8" />
@@ -58,7 +60,7 @@
         </Style>
 
         <Style x:Key="ModernTabItem" TargetType="TabItem">
-            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="FontSize" Value="14" />
@@ -77,7 +79,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="#F8FAFC" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextWhiteBrush}" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter Property="Foreground" Value="#22C55E" />
@@ -90,394 +92,912 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="30">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" /> <!-- Header Bar (Back button, Profile Title) -->
-            <RowDefinition Height="Auto" /> <!-- Summary Cards (GPA, Credits, Debt) -->
-            <RowDefinition Height="*" />    <!-- Detailed Tabs -->
-        </Grid.RowDefinitions>
+    <Grid>
+        <!-- Main Content -->
+        <Grid Margin="30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" /> <!-- Header Bar (Back button, Profile Title) -->
+                <RowDefinition Height="Auto" /> <!-- Summary Cards (GPA, Credits, Debt) -->
+                <RowDefinition Height="*" />    <!-- Detailed Tabs -->
+            </Grid.RowDefinitions>
 
-        <!-- 1. Header Bar -->
-        <Grid Grid.Row="0" Margin="0,0,0,24">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+            <!-- 1. Header Bar -->
+            <Grid Grid.Row="0" Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-            <Button Content="← Quay lại tra cứu" 
-                    Command="{Binding BackToSearchCommand}"
-                    Style="{StaticResource BackButtonStyle}" 
-                    Grid.Column="0" />
+                <Button Content="← Quay lại tra cứu" 
+                        Command="{Binding BackToSearchCommand}"
+                        Style="{StaticResource BackButtonStyle}" 
+                        Grid.Column="0" />
 
-            <StackPanel Grid.Column="1" Margin="20,0,0,0" VerticalAlignment="Center">
-                <TextBlock Foreground="#F8FAFC" FontSize="26" FontWeight="Bold">
-                    <Run Text="Hồ sơ học viên 360° - " />
-                    <Run Text="{Binding Student.FullName, FallbackValue='Học viên'}" />
-                </TextBlock>
-                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                    <TextBlock Text="Mã số:" Foreground="#64748B" FontSize="13" />
-                    <TextBlock Text="{Binding Student.StudentCode}" Foreground="#94A3B8" FontSize="13" FontWeight="SemiBold" Margin="4,0,16,0" />
-                    
-                    <TextBlock Text="Ngành:" Foreground="#64748B" FontSize="13" />
-                    <TextBlock Text="{Binding Student.ProgrammeName}" Foreground="#94A3B8" FontSize="13" FontWeight="SemiBold" Margin="4,0,16,0" />
-                    
-                    <TextBlock Text="Trạng thái học vụ:" Foreground="#64748B" FontSize="13" />
-                    <TextBlock Text="{Binding Student.CurrentStatus}" Foreground="#22C55E" FontSize="13" FontWeight="Bold" Margin="4,0,0,0" />
+                <StackPanel Grid.Column="1" Margin="20,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Foreground="{DynamicResource TextWhiteBrush}" FontSize="26" FontWeight="Bold">
+                        <Run Text="Hồ sơ học viên 360° - " />
+                        <Run Text="{Binding Student.FullName, FallbackValue='Học viên'}" />
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <TextBlock Text="Mã số:" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" />
+                        <TextBlock Text="{Binding Student.StudentCode}" Foreground="{DynamicResource TextWhiteBrush}" FontSize="13" FontWeight="SemiBold" Margin="4,0,16,0" />
+                        
+                        <TextBlock Text="Ngành:" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" />
+                        <TextBlock Text="{Binding Student.ProgrammeName}" Foreground="{DynamicResource TextWhiteBrush}" FontSize="13" FontWeight="SemiBold" Margin="4,0,16,0" />
+                        
+                        <TextBlock Text="Trạng thái học vụ:" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" />
+                        <TextBlock Text="{Binding Student.CurrentStatus}" Foreground="#22C55E" FontSize="13" FontWeight="Bold" Margin="4,0,0,0" />
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
 
-            <Button Content="+ Tạo Case hỗ trợ" 
-                    Command="{Binding CreateNewCaseCommand}"
-                    Style="{StaticResource AccentButtonStyle}"
-                    Grid.Column="2" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="✏️ Sửa thông tin" 
+                            Command="{Binding OpenEditStudentCommand}"
+                            Style="{StaticResource SecondaryButton}" 
+                            Padding="14,8" Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <Button Content="+ Tạo Case hỗ trợ" 
+                            Command="{Binding CreateNewCaseCommand}"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Padding="14,8" VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+
+            <!-- 2. Summary Cards -->
+            <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,24">
+                <!-- GPA Card -->
+                <Border Style="{StaticResource KpiCardBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Điểm trung bình (GPA)" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding Gpa, StringFormat={}{0:F2}}" Foreground="#10B981" FontSize="28" FontWeight="Bold" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <TextBlock Text="🎓" FontSize="36" Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    </Grid>
+                </Border>
+
+                <!-- Credits Card -->
+                <Border Style="{StaticResource KpiCardBorder}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Tín chỉ tích lũy" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding TotalCredits}" Foreground="#22C55E" FontSize="28" FontWeight="Bold" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <TextBlock Text="📖" FontSize="36" Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    </Grid>
+                </Border>
+
+                <!-- Debt Card -->
+                <Border Style="{StaticResource KpiCardBorder}" Margin="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Công nợ học phí" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding TotalDebt, StringFormat={}{0:N0}đ}" Foreground="#EF4444" FontSize="28" FontWeight="Bold" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <TextBlock Text="💵" FontSize="36" Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    </Grid>
+                </Border>
+            </UniformGrid>
+
+            <!-- 3. Details TabControl -->
+            <Border Grid.Row="2" 
+                    Background="{DynamicResource PanelDarkBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="12">
+                <TabControl Background="Transparent" BorderThickness="0" Margin="10">
+                    
+                    <!-- Tab 1: Kết Quả Học Tập -->
+                    <TabItem Header="📖  Kết quả Học tập" Style="{StaticResource ModernTabItem}">
+                        <Grid Margin="10,16,10,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="4,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Bảng điểm chi tiết các môn học phần đã đăng ký" 
+                                           Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Grid.Column="0" />
+                                <Button Content="+ Thêm môn học &amp; điểm" 
+                                        Command="{Binding OpenAddEnrollmentCommand}" 
+                                        Style="{StaticResource AccentButtonStyle}" 
+                                        Height="32" Padding="12,0" VerticalAlignment="Center" Grid.Column="1" />
+                            </Grid>
+                            
+                            <DataGrid Grid.Row="1" 
+                                      ItemsSource="{Binding EnrollmentsWithGrades}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      IsReadOnly="True"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      GridLinesVisibility="Horizontal"
+                                      HorizontalGridLinesBrush="#2D322D"
+                                      RowBackground="#1A1D1A"
+                                      AlternatingRowBackground="#0B0F0D"
+                                      Foreground="#E2E8F0"
+                                      RowHeight="36"
+                                      VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background" Value="#1A1D1A" />
+                                        <Setter Property="Foreground" Value="#94A3B8" />
+                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="BorderBrush" Value="#2D322D" />
+                                        <Setter Property="Padding" Value="10,6" />
+                                    </Style>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="DataGridCell">
+                                                    <Border Padding="10,0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                                        <ContentPresenter VerticalAlignment="Center" />
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#22C55E" />
+                                                <Setter Property="Foreground" Value="White" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Mã môn" Binding="{Binding CourseCode}" Width="100" FontWeight="SemiBold" Foreground="#22C55E" />
+                                    <DataGridTextColumn Header="Tên môn học phần" Binding="{Binding CourseName}" Width="*" />
+                                    <DataGridTextColumn Header="Số tín chỉ" Binding="{Binding Credits}" Width="90" />
+                                    <DataGridTextColumn Header="Chuyên cần (10%)" Binding="{Binding PracticeScore}" Width="140" />
+                                    <DataGridTextColumn Header="Giữa kỳ (30%)" Binding="{Binding MidtermScore}" Width="120" />
+                                    <DataGridTextColumn Header="Cuối kỳ (60%)" Binding="{Binding FinalScore}" Width="120" />
+                                    <DataGridTextColumn Header="Điểm TB" Binding="{Binding AverageScore}" Width="100" FontWeight="Bold" Foreground="#10B981" />
+                                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding EnrollStatus}" Width="120" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+
+                    <!-- Tab 2: Thông Tin Học Phí -->
+                    <TabItem Header="💵  Học phí &amp; Hóa đơn" Style="{StaticResource ModernTabItem}">
+                        <Grid Margin="10,16,10,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="4,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Danh sách hóa đơn học phí và lịch sử đóng tiền" 
+                                           Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Grid.Column="0" />
+                                <Button Content="+ Tạo hóa đơn học phí" 
+                                        Command="{Binding OpenAddInvoiceCommand}" 
+                                        Style="{StaticResource AccentButtonStyle}" 
+                                        Height="32" Padding="12,0" VerticalAlignment="Center" Grid.Column="1" />
+                            </Grid>
+
+                            <DataGrid Grid.Row="1" 
+                                      ItemsSource="{Binding InvoicesWithPayments}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      IsReadOnly="True"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      GridLinesVisibility="Horizontal"
+                                      HorizontalGridLinesBrush="#2D322D"
+                                      RowBackground="#1A1D1A"
+                                      AlternatingRowBackground="#0B0F0D"
+                                      Foreground="#E2E8F0"
+                                      RowHeight="38"
+                                      VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background" Value="#1A1D1A" />
+                                        <Setter Property="Foreground" Value="#94A3B8" />
+                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="BorderBrush" Value="#2D322D" />
+                                        <Setter Property="Padding" Value="10,6" />
+                                    </Style>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="DataGridCell">
+                                                    <Border Padding="10,0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                                        <ContentPresenter VerticalAlignment="Center" />
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#22C55E" />
+                                                <Setter Property="Foreground" Value="White" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Số hóa đơn" Binding="{Binding InvoiceNo}" Width="120" FontWeight="SemiBold" Foreground="#22C55E" />
+                                    <DataGridTextColumn Header="Học kỳ" Binding="{Binding Semester}" Width="130" />
+                                    <DataGridTextColumn Header="Tổng số tiền" Binding="{Binding TotalAmount, StringFormat={}{0:N0}đ}" Width="120" />
+                                    <DataGridTextColumn Header="Đã thanh toán" Binding="{Binding PaidAmount, StringFormat={}{0:N0}đ}" Width="120" Foreground="#10B981" />
+                                    <DataGridTextColumn Header="Còn nợ" Binding="{Binding RemainingAmount, StringFormat={}{0:N0}đ}" Width="120" Foreground="#EF4444" FontWeight="SemiBold" />
+                                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="120" />
+                                    <DataGridTextColumn Header="Hạn nộp" Binding="{Binding DueDate, StringFormat={}{0:dd/MM/yyyy}}" Width="120" />
+                                    <DataGridTextColumn Header="Lịch sử giao dịch" Binding="{Binding PaymentsList}" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+
+                    <!-- Tab 3: Đề tài & Nghiên cứu -->
+                    <TabItem Header="🎓  Đề tài &amp; Luận văn" Style="{StaticResource ModernTabItem}">
+                        <Grid Margin="10,16,10,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="4,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Thông tin đề tài nghiên cứu sau đại học và kết quả bảo vệ" 
+                                           Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Grid.Column="0" />
+                                <Button Content="+ Thêm đề tài nghiên cứu" 
+                                        Command="{Binding OpenAddThesisCommand}" 
+                                        Style="{StaticResource AccentButtonStyle}" 
+                                        Height="32" Padding="12,0" VerticalAlignment="Center" Grid.Column="1" />
+                            </Grid>
+
+                            <DataGrid Grid.Row="1" 
+                                      ItemsSource="{Binding ThesisTopics}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      IsReadOnly="True"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      GridLinesVisibility="Horizontal"
+                                      HorizontalGridLinesBrush="#2D322D"
+                                      RowBackground="#1A1D1A"
+                                      AlternatingRowBackground="#0B0F0D"
+                                      Foreground="#E2E8F0"
+                                      RowHeight="38"
+                                      VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background" Value="#1A1D1A" />
+                                        <Setter Property="Foreground" Value="#94A3B8" />
+                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="BorderBrush" Value="#2D322D" />
+                                        <Setter Property="Padding" Value="10,6" />
+                                    </Style>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="DataGridCell">
+                                                    <Border Padding="10,0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                                        <ContentPresenter VerticalAlignment="Center" />
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#22C55E" />
+                                                <Setter Property="Foreground" Value="White" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Mã đề tài" Binding="{Binding TopicCode}" Width="120" FontWeight="SemiBold" Foreground="#22C55E" />
+                                    <DataGridTextColumn Header="Tên đề tài nghiên cứu" Binding="{Binding Title}" Width="*" />
+                                    <DataGridTextColumn Header="Giảng viên hướng dẫn" Binding="{Binding AdvisorName}" Width="200" />
+                                    <DataGridTextColumn Header="Điểm bảo vệ" Binding="{Binding FinalScore, TargetNullValue='Chưa bảo vệ'}" Width="120" FontWeight="Bold" Foreground="#10B981" />
+                                    <DataGridTextColumn Header="Kết quả" Binding="{Binding DefenceResultStatus, TargetNullValue='N/A'}" Width="100" />
+                                    <DataGridTextColumn Header="Ngày bảo vệ" Binding="{Binding DefenceDate, StringFormat={}{0:dd/MM/yyyy}, TargetNullValue='N/A'}" Width="120" />
+                                    <DataGridTextColumn Header="Trạng thái đề tài" Binding="{Binding Status}" Width="130" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+
+                    <!-- Tab 4: Văn bằng & Cấp phát -->
+                    <TabItem Header="📜  Văn bằng &amp; Tốt nghiệp" Style="{StaticResource ModernTabItem}">
+                        <Grid Margin="10,16,10,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="4,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Thông tin văn bằng và lịch sử nhận bằng thạc sĩ, tiến sĩ" 
+                                           Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Grid.Column="0" />
+                                <Button Content="+ Cấp phát văn bằng" 
+                                        Command="{Binding OpenAddDegreeCommand}" 
+                                        Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"
+                                        Style="{StaticResource AccentButtonStyle}" 
+                                        Height="32" Padding="12,0" VerticalAlignment="Center" Grid.Column="1" />
+                            </Grid>
+
+                            <DataGrid Grid.Row="1" 
+                                      ItemsSource="{Binding Degrees}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      IsReadOnly="True"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      GridLinesVisibility="Horizontal"
+                                      HorizontalGridLinesBrush="#2D322D"
+                                      RowBackground="#1A1D1A"
+                                      AlternatingRowBackground="#0B0F0D"
+                                      Foreground="#E2E8F0"
+                                      RowHeight="38"
+                                      VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background" Value="#1A1D1A" />
+                                        <Setter Property="Foreground" Value="#94A3B8" />
+                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="BorderBrush" Value="#2D322D" />
+                                        <Setter Property="Padding" Value="10,6" />
+                                    </Style>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="DataGridCell">
+                                                    <Border Padding="10,0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                                        <ContentPresenter VerticalAlignment="Center" />
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#22C55E" />
+                                                <Setter Property="Foreground" Value="White" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Số hiệu văn bằng" Binding="{Binding DegreeNumber}" Width="200" FontWeight="SemiBold" Foreground="#22C55E" />
+                                    <DataGridTextColumn Header="Ngày cấp phát" Binding="{Binding IssueDate, StringFormat={}{0:dd/MM/yyyy}}" Width="150" />
+                                    <DataGridTextColumn Header="Trạng thái nhận" Binding="{Binding Status}" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+
+                    <!-- Tab 5: Lịch sử Sự vụ -->
+                    <TabItem Header="📋  Lịch sử Sự vụ (Case)" Style="{StaticResource ModernTabItem}">
+                        <Grid Margin="10,16,10,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Danh sách các case yêu cầu hỗ trợ và xử lý sự vụ của học viên" 
+                                       Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold" Margin="4,0,0,12" Grid.Row="0"/>
+
+                            <DataGrid Grid.Row="1" 
+                                      ItemsSource="{Binding StudentCases}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      IsReadOnly="True"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      GridLinesVisibility="Horizontal"
+                                      HorizontalGridLinesBrush="#2D322D"
+                                      RowBackground="#1A1D1A"
+                                      AlternatingRowBackground="#0B0F0D"
+                                      Foreground="#E2E8F0"
+                                      RowHeight="38"
+                                      VerticalScrollBarVisibility="Auto">
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background" Value="#1A1D1A" />
+                                        <Setter Property="Foreground" Value="#94A3B8" />
+                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                        <Setter Property="BorderBrush" Value="#2D322D" />
+                                        <Setter Property="Padding" Value="10,6" />
+                                    </Style>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="DataGridCell">
+                                                    <Border Padding="10,0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                                        <ContentPresenter VerticalAlignment="Center" />
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#22C55E" />
+                                                <Setter Property="Foreground" Value="White" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.Resources>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Mã Case" Binding="{Binding CaseCode}" Width="120" FontWeight="SemiBold" Foreground="#22C55E" />
+                                    <DataGridTextColumn Header="Loại sự vụ" Binding="{Binding CaseType}" Width="120" />
+                                    <DataGridTextColumn Header="Tiêu đề yêu cầu" Binding="{Binding Title}" Width="*" />
+                                    <DataGridTextColumn Header="Mức ưu tiên" Binding="{Binding Priority}" Width="100" FontWeight="SemiBold" />
+                                    <DataGridTextColumn Header="Cán bộ xử lý" Binding="{Binding Assignee}" Width="150" />
+                                    <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="110" />
+                                    <DataGridTextColumn Header="Ngày tạo" Binding="{Binding CreatedAt, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Width="140" />
+                                    <DataGridTextColumn Header="Hạn xử lý" Binding="{Binding DueDate, StringFormat={}{0:dd/MM/yyyy}, TargetNullValue='Không có'}" Width="120" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Border>
         </Grid>
 
-        <!-- 2. Summary Cards -->
-        <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,24">
-            <!-- GPA Card -->
-            <Border Style="{StaticResource KpiCardBorder}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Điểm trung bình (GPA)" Foreground="#64748B" FontSize="13" FontWeight="SemiBold" />
-                        <TextBlock Text="{Binding Gpa, StringFormat={}{0:F2}}" Foreground="#10B981" FontSize="28" FontWeight="Bold" Margin="0,4,0,0" />
+        <!-- OVERLAY 1: Add Enrollment Dialog -->
+        <Grid Background="#B0000000" 
+              Visibility="{Binding IsAddEnrollmentOpen, Converter={StaticResource BoolToVis}}">
+            <Border Background="{DynamicResource PanelDarkBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="16" 
+                    Width="500" 
+                    Height="Auto" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center" 
+                    Padding="30">
+                <StackPanel>
+                    <!-- Header -->
+                    <Grid Margin="0,0,0,20">
+                        <TextBlock Text="Thêm Môn Học &amp; Kết Quả Điểm" Foreground="{DynamicResource TextWhiteBrush}" FontSize="20" FontWeight="Bold" />
+                        <Button Content="✕" 
+                                Command="{Binding CloseDialogsCommand}"
+                                Foreground="{DynamicResource TextMutedBrush}" 
+                                Background="Transparent" 
+                                BorderThickness="0" 
+                                FontSize="18" 
+                                HorizontalAlignment="Right" 
+                                Cursor="Hand" />
+                    </Grid>
+
+                    <!-- Course Code -->
+                    <TextBlock Text="Mã môn học" Style="{StaticResource ModernLabel}" />
+                    <TextBox Text="{Binding EnrollCourseCode, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Margin="0,0,0,16" />
+
+                    <!-- Course Name -->
+                    <TextBlock Text="Tên môn học phần" Style="{StaticResource ModernLabel}" />
+                    <TextBox Text="{Binding EnrollCourseName, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Margin="0,0,0,16" />
+
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <!-- Credits -->
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <TextBlock Text="Số tín chỉ" Style="{StaticResource ModernLabel}" />
+                            <TextBox Text="{Binding EnrollCredits, UpdateSourceTrigger=PropertyChanged}" 
+                                     Style="{StaticResource ModernTextBox}" />
+                        </StackPanel>
+                        <!-- Status -->
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock Text="Trạng thái học vụ" Style="{StaticResource ModernLabel}" />
+                            <ComboBox ItemsSource="{Binding EnrollStatuses}"
+                                      SelectedItem="{Binding EnrollSelectedStatus}"
+                                      Style="{StaticResource ModernComboBox}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Scores -->
+                    <TextBlock Text="Thông tin điểm số thành phần" Foreground="{DynamicResource TextWhiteBrush}" FontSize="14" FontWeight="SemiBold" Margin="0,8,0,12" />
+                    
+                    <Grid Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <!-- Practice Score (10%) -->
+                        <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                            <TextBlock Text="Chuyên cần (10%)" Style="{StaticResource ModernLabel}" />
+                            <TextBox Text="{Binding EnrollPracticeScore, UpdateSourceTrigger=PropertyChanged}" 
+                                     Style="{StaticResource ModernTextBox}" />
+                        </StackPanel>
+                        <!-- Midterm Score (30%) -->
+                        <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                            <TextBlock Text="Giữa kỳ (30%)" Style="{StaticResource ModernLabel}" />
+                            <TextBox Text="{Binding EnrollMidtermScore, UpdateSourceTrigger=PropertyChanged}" 
+                                     Style="{StaticResource ModernTextBox}" />
+                        </StackPanel>
+                        <!-- Final Score (60%) -->
+                        <StackPanel Grid.Column="2" Margin="6,0,0,0">
+                            <TextBlock Text="Cuối kỳ (60%)" Style="{StaticResource ModernLabel}" />
+                            <TextBox Text="{Binding EnrollFinalScore, UpdateSourceTrigger=PropertyChanged}" 
+                                     Style="{StaticResource ModernTextBox}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Actions -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Hủy" 
+                                Command="{Binding CloseDialogsCommand}" 
+                                Style="{StaticResource SecondaryButton}" 
+                                Width="100" 
+                                Margin="0,0,12,0" />
+                        <Button Content="Lưu" 
+                                Command="{Binding SaveEnrollmentCommand}" 
+                                Style="{StaticResource PrimaryButton}" 
+                                Width="100" />
                     </StackPanel>
-                    <TextBlock Text="🎓" FontSize="36" Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0" />
-                </Grid>
+                </StackPanel>
             </Border>
+        </Grid>
 
-            <!-- Credits Card -->
-            <Border Style="{StaticResource KpiCardBorder}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Tín chỉ tích lũy" Foreground="#64748B" FontSize="13" FontWeight="SemiBold" />
-                        <TextBlock Text="{Binding TotalCredits}" Foreground="#22C55E" FontSize="28" FontWeight="Bold" Margin="0,4,0,0" />
+        <!-- OVERLAY 2: Add Invoice Dialog -->
+        <Grid Background="#B0000000" 
+              Visibility="{Binding IsAddInvoiceOpen, Converter={StaticResource BoolToVis}}">
+            <Border Background="{DynamicResource PanelDarkBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="16" 
+                    Width="500" 
+                    Height="Auto" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center" 
+                    Padding="30">
+                <StackPanel>
+                    <!-- Header -->
+                    <Grid Margin="0,0,0,20">
+                        <TextBlock Text="Tạo Hóa Đơn Học Phí" Foreground="{DynamicResource TextWhiteBrush}" FontSize="20" FontWeight="Bold" />
+                        <Button Content="✕" 
+                                Command="{Binding CloseDialogsCommand}"
+                                Foreground="{DynamicResource TextMutedBrush}" 
+                                Background="Transparent" 
+                                BorderThickness="0" 
+                                FontSize="18" 
+                                HorizontalAlignment="Right" 
+                                Cursor="Hand" />
+                    </Grid>
+
+                    <!-- Semester -->
+                    <TextBlock Text="Học kỳ" Style="{StaticResource ModernLabel}" />
+                    <TextBox Text="{Binding InvoiceSemester, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Margin="0,0,0,16" />
+
+                    <!-- Invoice No -->
+                    <TextBlock Text="Số hóa đơn" Style="{StaticResource ModernLabel}" />
+                    <TextBox Text="{Binding InvoiceNo, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Margin="0,0,0,16" />
+
+                    <!-- Total Amount -->
+                    <TextBlock Text="Tổng số tiền (VNĐ)" Style="{StaticResource ModernLabel}" />
+                    <TextBox Text="{Binding InvoiceTotalAmount, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Margin="0,0,0,16" />
+
+                    <Grid Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <!-- Status -->
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <TextBlock Text="Trạng thái" Style="{StaticResource ModernLabel}" />
+                            <ComboBox ItemsSource="{Binding InvoiceStatuses}"
+                                      SelectedItem="{Binding InvoiceSelectedStatus}"
+                                      Style="{StaticResource ModernComboBox}" />
+                        </StackPanel>
+                        <!-- Due Date -->
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock Text="Hạn nộp" Style="{StaticResource ModernLabel}" />
+                            <DatePicker SelectedDate="{Binding InvoiceDueDate}" 
+                                        Height="38" 
+                                        BorderBrush="{DynamicResource BorderDarkBrush}" 
+                                        Padding="10,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Initial Payment -->
+                    <TextBlock Text="Số tiền thanh toán ban đầu (nếu có)" Style="{StaticResource ModernLabel}" />
+                    <TextBox Text="{Binding InvoiceAmountPaid, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Margin="0,0,0,24" />
+
+                    <!-- Actions -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Hủy" 
+                                Command="{Binding CloseDialogsCommand}" 
+                                Style="{StaticResource SecondaryButton}" 
+                                Width="100" 
+                                Margin="0,0,12,0" />
+                        <Button Content="Tạo mới" 
+                                Command="{Binding SaveInvoiceCommand}" 
+                                Style="{StaticResource PrimaryButton}" 
+                                Width="100" />
                     </StackPanel>
-                    <TextBlock Text="📖" FontSize="36" Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0" />
-                </Grid>
+                </StackPanel>
             </Border>
+        </Grid>
 
-            <!-- Debt Card -->
-            <Border Style="{StaticResource KpiCardBorder}" Margin="0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Công nợ học phí" Foreground="#64748B" FontSize="13" FontWeight="SemiBold" />
-                        <TextBlock Text="{Binding TotalDebt, StringFormat={}{0:N0}đ}" Foreground="#EF4444" FontSize="28" FontWeight="Bold" Margin="0,4,0,0" />
+        <!-- OVERLAY 3: Add Thesis Dialog -->
+        <Grid Background="#B0000000" 
+              Visibility="{Binding IsAddThesisOpen, Converter={StaticResource BoolToVis}}">
+            <Border Background="{DynamicResource PanelDarkBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="16" 
+                    Width="500" 
+                    Height="Auto" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center" 
+                    Padding="30">
+                <StackPanel>
+                    <!-- Header -->
+                    <Grid Margin="0,0,0,20">
+                        <TextBlock Text="Thêm Đề Tài &amp; Luận Văn" Foreground="{DynamicResource TextWhiteBrush}" FontSize="20" FontWeight="Bold" />
+                        <Button Content="✕" 
+                                Command="{Binding CloseDialogsCommand}"
+                                Foreground="{DynamicResource TextMutedBrush}" 
+                                Background="Transparent" 
+                                BorderThickness="0" 
+                                FontSize="18" 
+                                HorizontalAlignment="Right" 
+                                Cursor="Hand" />
+                    </Grid>
+
+                    <!-- Topic Code -->
+                    <TextBlock Text="Mã đề tài" Style="{StaticResource ModernLabel}" />
+                    <TextBox Text="{Binding ThesisTopicCode, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Margin="0,0,0,16" />
+
+                    <!-- Thesis Title -->
+                    <TextBlock Text="Tên đề tài nghiên cứu" Style="{StaticResource ModernLabel}" />
+                    <TextBox Text="{Binding ThesisTitle, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Margin="0,0,0,16" />
+
+                    <!-- Advisor Name -->
+                    <TextBlock Text="Giảng viên hướng dẫn" Style="{StaticResource ModernLabel}" />
+                    <TextBox Text="{Binding ThesisAdvisorName, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Margin="0,0,0,16" />
+
+                    <!-- Status -->
+                    <TextBlock Text="Trạng thái đề tài" Style="{StaticResource ModernLabel}" />
+                    <ComboBox ItemsSource="{Binding ThesisStatuses}"
+                              SelectedItem="{Binding ThesisSelectedStatus}"
+                              Style="{StaticResource ModernComboBox}" 
+                              Margin="0,0,0,16" />
+
+                    <!-- Defence Result (Optional) -->
+                    <TextBlock Text="Kết quả bảo vệ (Không bắt buộc)" Foreground="{DynamicResource TextWhiteBrush}" FontSize="14" FontWeight="SemiBold" Margin="0,8,0,12" />
+                    
+                    <Grid Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <!-- Final Score -->
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <TextBlock Text="Điểm bảo vệ" Style="{StaticResource ModernLabel}" />
+                            <TextBox Text="{Binding ThesisFinalScore, TargetNullValue='', UpdateSourceTrigger=PropertyChanged}" 
+                                     Style="{StaticResource ModernTextBox}" />
+                        </StackPanel>
+                        <!-- Defence Date -->
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock Text="Ngày bảo vệ" Style="{StaticResource ModernLabel}" />
+                            <DatePicker SelectedDate="{Binding ThesisDefenceDate}" 
+                                        Height="38" 
+                                        BorderBrush="{DynamicResource BorderDarkBrush}" 
+                                        Padding="10,0" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Actions -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Hủy" 
+                                Command="{Binding CloseDialogsCommand}" 
+                                Style="{StaticResource SecondaryButton}" 
+                                Width="100" 
+                                Margin="0,0,12,0" />
+                        <Button Content="Lưu" 
+                                Command="{Binding SaveThesisCommand}" 
+                                Style="{StaticResource PrimaryButton}" 
+                                Width="100" />
                     </StackPanel>
-                    <TextBlock Text="💵" FontSize="36" Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0" />
-                </Grid>
+                </StackPanel>
             </Border>
-        </UniformGrid>
+        </Grid>
 
-        <!-- 3. Details TabControl -->
-        <Border Grid.Row="2" 
-                Background="#1A1D1A" 
-                BorderBrush="#2D322D" 
-                BorderThickness="1" 
-                CornerRadius="12">
-            <TabControl Background="Transparent" BorderThickness="0" Margin="10">
-                
-                <!-- Tab 1: Kết Quả Học Tập -->
-                <TabItem Header="📖  Kết quả Học tập" Style="{StaticResource ModernTabItem}">
-                    <Grid Margin="10,16,10,10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Text="Bảng điểm chi tiết các môn học phần đã đăng ký" 
-                                   Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold" Margin="4,0,0,12" Grid.Row="0"/>
-                        
-                        <DataGrid Grid.Row="1" 
-                                  ItemsSource="{Binding EnrollmentsWithGrades}"
-                                  AutoGenerateColumns="False"
-                                  CanUserAddRows="False"
-                                  IsReadOnly="True"
-                                  Background="Transparent"
-                                  BorderThickness="0"
-                                  GridLinesVisibility="Horizontal"
-                                  HorizontalGridLinesBrush="#2D322D"
-                                  Foreground="#E2E8F0"
-                                  RowHeight="36"
-                                  VerticalScrollBarVisibility="Auto">
-                            <DataGrid.Resources>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#1A1D1A" />
-                                    <Setter Property="Foreground" Value="#94A3B8" />
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                    <Setter Property="BorderBrush" Value="#2D322D" />
-                                    <Setter Property="Padding" Value="10,6" />
-                                </Style>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="BorderThickness" Value="0" />
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="DataGridCell">
-                                                <Border Padding="10,0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-                                                    <ContentPresenter VerticalAlignment="Center" />
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </DataGrid.Resources>
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Mã môn" Binding="{Binding CourseCode}" Width="100" FontWeight="SemiBold" Foreground="#22C55E" />
-                                <DataGridTextColumn Header="Tên môn học phần" Binding="{Binding CourseName}" Width="*" />
-                                <DataGridTextColumn Header="Số tín chỉ" Binding="{Binding Credits}" Width="90" />
-                                <DataGridTextColumn Header="Chuyên cần (10%)" Binding="{Binding PracticeScore}" Width="140" />
-                                <DataGridTextColumn Header="Giữa kỳ (30%)" Binding="{Binding MidtermScore}" Width="120" />
-                                <DataGridTextColumn Header="Cuối kỳ (60%)" Binding="{Binding FinalScore}" Width="120" />
-                                <DataGridTextColumn Header="Điểm TB" Binding="{Binding AverageScore}" Width="100" FontWeight="Bold" Foreground="#10B981" />
-                                <DataGridTextColumn Header="Trạng thái" Binding="{Binding EnrollStatus}" Width="120" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+        <!-- OVERLAY 4: Add Degree Dialog -->
+        <Grid Background="#B0000000" 
+              Visibility="{Binding IsAddDegreeOpen, Converter={StaticResource BoolToVis}}">
+            <Border Background="{DynamicResource PanelDarkBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="16" 
+                    Width="500" 
+                    Height="Auto" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center" 
+                    Padding="30">
+                <StackPanel>
+                    <!-- Header -->
+                    <Grid Margin="0,0,0,20">
+                        <TextBlock Text="Cấp Phát Văn Bằng" Foreground="{DynamicResource TextWhiteBrush}" FontSize="20" FontWeight="Bold" />
+                        <Button Content="✕" 
+                                Command="{Binding CloseDialogsCommand}"
+                                Foreground="{DynamicResource TextMutedBrush}" 
+                                Background="Transparent" 
+                                BorderThickness="0" 
+                                FontSize="18" 
+                                HorizontalAlignment="Right" 
+                                Cursor="Hand" />
                     </Grid>
-                </TabItem>
 
-                <!-- Tab 2: Thông Tin Học Phí -->
-                <TabItem Header="💵  Học phí &amp; Hóa đơn" Style="{StaticResource ModernTabItem}">
-                    <Grid Margin="10,16,10,10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
+                    <!-- Degree Number -->
+                    <TextBlock Text="Số hiệu văn bằng" Style="{StaticResource ModernLabel}" />
+                    <TextBox Text="{Binding DegreeNumber, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Margin="0,0,0,16" />
 
-                        <TextBlock Text="Danh sách hóa đơn học phí và lịch sử đóng tiền" 
-                                   Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold" Margin="4,0,0,12" Grid.Row="0"/>
+                    <!-- Issue Date -->
+                    <TextBlock Text="Ngày cấp phát" Style="{StaticResource ModernLabel}" />
+                    <DatePicker SelectedDate="{Binding DegreeIssueDate}" 
+                                Height="38" 
+                                BorderBrush="{DynamicResource BorderDarkBrush}" 
+                                Padding="10,0" 
+                                Margin="0,0,0,16" />
 
-                        <DataGrid Grid.Row="1" 
-                                  ItemsSource="{Binding InvoicesWithPayments}"
-                                  AutoGenerateColumns="False"
-                                  CanUserAddRows="False"
-                                  IsReadOnly="True"
-                                  Background="Transparent"
-                                  BorderThickness="0"
-                                  GridLinesVisibility="Horizontal"
-                                  HorizontalGridLinesBrush="#2D322D"
-                                  Foreground="#E2E8F0"
-                                  RowHeight="38"
-                                  VerticalScrollBarVisibility="Auto">
-                            <DataGrid.Resources>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#1A1D1A" />
-                                    <Setter Property="Foreground" Value="#94A3B8" />
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                    <Setter Property="BorderBrush" Value="#2D322D" />
-                                    <Setter Property="Padding" Value="10,6" />
-                                </Style>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="BorderThickness" Value="0" />
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="DataGridCell">
-                                                <Border Padding="10,0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-                                                    <ContentPresenter VerticalAlignment="Center" />
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </DataGrid.Resources>
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Số hóa đơn" Binding="{Binding InvoiceNo}" Width="120" FontWeight="SemiBold" Foreground="#22C55E" />
-                                <DataGridTextColumn Header="Học kỳ" Binding="{Binding Semester}" Width="130" />
-                                <DataGridTextColumn Header="Tổng số tiền" Binding="{Binding TotalAmount, StringFormat={}{0:N0}đ}" Width="120" />
-                                <DataGridTextColumn Header="Đã thanh toán" Binding="{Binding PaidAmount, StringFormat={}{0:N0}đ}" Width="120" Foreground="#10B981" />
-                                <DataGridTextColumn Header="Còn nợ" Binding="{Binding RemainingAmount, StringFormat={}{0:N0}đ}" Width="120" Foreground="#EF4444" FontWeight="SemiBold" />
-                                <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="120" />
-                                <DataGridTextColumn Header="Hạn nộp" Binding="{Binding DueDate, StringFormat={}{0:dd/MM/yyyy}}" Width="120" />
-                                <DataGridTextColumn Header="Lịch sử giao dịch" Binding="{Binding PaymentsList}" Width="*" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                    <!-- Status -->
+                    <TextBlock Text="Trạng thái nhận" Style="{StaticResource ModernLabel}" />
+                    <ComboBox ItemsSource="{Binding DegreeStatuses}"
+                              SelectedItem="{Binding DegreeSelectedStatus}"
+                              Style="{StaticResource ModernComboBox}" 
+                              Margin="0,0,0,24" />
+
+                    <!-- Actions -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Hủy" 
+                                Command="{Binding CloseDialogsCommand}" 
+                                Style="{StaticResource SecondaryButton}" 
+                                Width="100" 
+                                Margin="0,0,12,0" />
+                        <Button Content="Cấp bằng" 
+                                Command="{Binding SaveDegreeCommand}" 
+                                Style="{StaticResource PrimaryButton}" 
+                                Width="100" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- OVERLAY 5: Edit Student Dialog -->
+        <Grid Background="#B0000000" 
+              Visibility="{Binding IsEditStudentOpen, Converter={StaticResource BoolToVis}}">
+            <Border Background="{DynamicResource PanelDarkBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="16" 
+                    Width="500" 
+                    Height="Auto" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center" 
+                    Padding="30">
+                <StackPanel>
+                    <!-- Header -->
+                    <Grid Margin="0,0,0,20">
+                        <TextBlock Text="Chỉnh Sửa Thông Tin Học Viên" Foreground="{DynamicResource TextWhiteBrush}" FontSize="20" FontWeight="Bold" />
+                        <Button Content="✕" 
+                                Command="{Binding CloseDialogsCommand}"
+                                Foreground="{DynamicResource TextMutedBrush}" 
+                                Background="Transparent" 
+                                BorderThickness="0" 
+                                FontSize="18" 
+                                HorizontalAlignment="Right" 
+                                Cursor="Hand" />
                     </Grid>
-                </TabItem>
 
-                <!-- Tab 3: Đề tài & Nghiên cứu -->
-                <TabItem Header="🎓  Đề tài &amp; Luận văn" Style="{StaticResource ModernTabItem}">
-                    <Grid Margin="10,16,10,10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
+                    <!-- Student Code (Read Only) -->
+                    <TextBlock Text="Mã học viên (Không được sửa)" Style="{StaticResource ModernLabel}" />
+                    <TextBox Text="{Binding Student.StudentCode, Mode=OneWay}" 
+                             Style="{StaticResource ModernTextBox}" 
+                             IsReadOnly="True"
+                             Opacity="0.6"
+                             Margin="0,0,0,16" />
 
-                        <TextBlock Text="Thông tin đề tài nghiên cứu sau đại học và kết quả bảo vệ" 
-                                   Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold" Margin="4,0,0,12" Grid.Row="0"/>
+                    <!-- Full Name -->
+                    <TextBlock Text="Họ và tên" Style="{StaticResource ModernLabel}" />
+                    <TextBox Text="{Binding EditFullName, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource ModernTextBox}" 
+                             Margin="0,0,0,16" />
 
-                        <DataGrid Grid.Row="1" 
-                                  ItemsSource="{Binding ThesisTopics}"
-                                  AutoGenerateColumns="False"
-                                  CanUserAddRows="False"
-                                  IsReadOnly="True"
-                                  Background="Transparent"
-                                  BorderThickness="0"
-                                  GridLinesVisibility="Horizontal"
-                                  HorizontalGridLinesBrush="#2D322D"
-                                  Foreground="#E2E8F0"
-                                  RowHeight="38"
-                                  VerticalScrollBarVisibility="Auto">
-                            <DataGrid.Resources>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#1A1D1A" />
-                                    <Setter Property="Foreground" Value="#94A3B8" />
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                    <Setter Property="BorderBrush" Value="#2D322D" />
-                                    <Setter Property="Padding" Value="10,6" />
-                                </Style>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="BorderThickness" Value="0" />
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="DataGridCell">
-                                                <Border Padding="10,0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-                                                    <ContentPresenter VerticalAlignment="Center" />
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </DataGrid.Resources>
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Mã đề tài" Binding="{Binding TopicCode}" Width="120" FontWeight="SemiBold" Foreground="#22C55E" />
-                                <DataGridTextColumn Header="Tên đề tài nghiên cứu" Binding="{Binding Title}" Width="*" />
-                                <DataGridTextColumn Header="Giảng viên hướng dẫn" Binding="{Binding AdvisorName}" Width="200" />
-                                <DataGridTextColumn Header="Điểm bảo vệ" Binding="{Binding FinalScore, TargetNullValue='Chưa bảo vệ'}" Width="120" FontWeight="Bold" Foreground="#10B981" />
-                                <DataGridTextColumn Header="Kết quả" Binding="{Binding DefenceResultStatus, TargetNullValue='N/A'}" Width="100" />
-                                <DataGridTextColumn Header="Ngày bảo vệ" Binding="{Binding DefenceDate, StringFormat={}{0:dd/MM/yyyy}, TargetNullValue='N/A'}" Width="120" />
-                                <DataGridTextColumn Header="Trạng thái đề tài" Binding="{Binding Status}" Width="130" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
-                </TabItem>
+                    <!-- DOB -->
+                    <TextBlock Text="Ngày sinh" Style="{StaticResource ModernLabel}" />
+                    <DatePicker SelectedDate="{Binding EditDOB}" 
+                                Height="38" 
+                                BorderBrush="{DynamicResource BorderDarkBrush}" 
+                                Padding="10,0" 
+                                Margin="0,0,0,16" />
 
-                <!-- Tab 4: Văn bằng & Cấp phát -->
-                <TabItem Header="📜  Văn bằng &amp; Tốt nghiệp" Style="{StaticResource ModernTabItem}">
-                    <Grid Margin="10,16,10,10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
+                    <!-- Programme -->
+                    <TextBlock Text="Chương trình học" Style="{StaticResource ModernLabel}" />
+                    <ComboBox ItemsSource="{Binding EditProgrammes}"
+                              SelectedItem="{Binding EditSelectedProgramme}"
+                              Style="{StaticResource ModernComboBox}" 
+                              Margin="0,0,0,16" />
 
-                        <TextBlock Text="Thông tin văn bằng và lịch sử nhận bằng thạc sĩ, tiến sĩ" 
-                                   Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold" Margin="4,0,0,12" Grid.Row="0"/>
+                    <!-- Status -->
+                    <TextBlock Text="Trạng thái học vụ" Style="{StaticResource ModernLabel}" />
+                    <ComboBox ItemsSource="{Binding EditStatuses}"
+                              SelectedItem="{Binding EditSelectedStatus}"
+                              Style="{StaticResource ModernComboBox}" 
+                              Margin="0,0,0,24" />
 
-                        <DataGrid Grid.Row="1" 
-                                  ItemsSource="{Binding Degrees}"
-                                  AutoGenerateColumns="False"
-                                  CanUserAddRows="False"
-                                  IsReadOnly="True"
-                                  Background="Transparent"
-                                  BorderThickness="0"
-                                  GridLinesVisibility="Horizontal"
-                                  HorizontalGridLinesBrush="#2D322D"
-                                  Foreground="#E2E8F0"
-                                  RowHeight="38"
-                                  VerticalScrollBarVisibility="Auto">
-                            <DataGrid.Resources>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#1A1D1A" />
-                                    <Setter Property="Foreground" Value="#94A3B8" />
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                    <Setter Property="BorderBrush" Value="#2D322D" />
-                                    <Setter Property="Padding" Value="10,6" />
-                                </Style>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="BorderThickness" Value="0" />
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="DataGridCell">
-                                                <Border Padding="10,0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-                                                    <ContentPresenter VerticalAlignment="Center" />
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </DataGrid.Resources>
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Số hiệu văn bằng" Binding="{Binding DegreeNumber}" Width="200" FontWeight="SemiBold" Foreground="#22C55E" />
-                                <DataGridTextColumn Header="Ngày cấp phát" Binding="{Binding IssueDate, StringFormat={}{0:dd/MM/yyyy}}" Width="150" />
-                                <DataGridTextColumn Header="Trạng thái nhận" Binding="{Binding Status}" Width="*" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
-                </TabItem>
-
-                <!-- Tab 5: Lịch sử Sự vụ -->
-                <TabItem Header="📋  Lịch sử Sự vụ (Case)" Style="{StaticResource ModernTabItem}">
-                    <Grid Margin="10,16,10,10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Text="Danh sách các case yêu cầu hỗ trợ và xử lý sự vụ của học viên" 
-                                   Foreground="#94A3B8" FontSize="14" FontWeight="SemiBold" Margin="4,0,0,12" Grid.Row="0"/>
-
-                        <DataGrid Grid.Row="1" 
-                                  ItemsSource="{Binding StudentCases}"
-                                  AutoGenerateColumns="False"
-                                  CanUserAddRows="False"
-                                  IsReadOnly="True"
-                                  Background="Transparent"
-                                  BorderThickness="0"
-                                  GridLinesVisibility="Horizontal"
-                                  HorizontalGridLinesBrush="#2D322D"
-                                  Foreground="#E2E8F0"
-                                  RowHeight="38"
-                                  VerticalScrollBarVisibility="Auto">
-                            <DataGrid.Resources>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#1A1D1A" />
-                                    <Setter Property="Foreground" Value="#94A3B8" />
-                                    <Setter Property="FontWeight" Value="SemiBold" />
-                                    <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                    <Setter Property="BorderBrush" Value="#2D322D" />
-                                    <Setter Property="Padding" Value="10,6" />
-                                </Style>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="BorderThickness" Value="0" />
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="DataGridCell">
-                                                <Border Padding="10,0" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-                                                    <ContentPresenter VerticalAlignment="Center" />
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </DataGrid.Resources>
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Mã Case" Binding="{Binding CaseCode}" Width="120" FontWeight="SemiBold" Foreground="#22C55E" />
-                                <DataGridTextColumn Header="Loại sự vụ" Binding="{Binding CaseType}" Width="120" />
-                                <DataGridTextColumn Header="Tiêu đề yêu cầu" Binding="{Binding Title}" Width="*" />
-                                <DataGridTextColumn Header="Mức ưu tiên" Binding="{Binding Priority}" Width="100" FontWeight="SemiBold" />
-                                <DataGridTextColumn Header="Cán bộ xử lý" Binding="{Binding Assignee}" Width="150" />
-                                <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="110" />
-                                <DataGridTextColumn Header="Ngày tạo" Binding="{Binding CreatedAt, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Width="140" />
-                                <DataGridTextColumn Header="Hạn xử lý" Binding="{Binding DueDate, StringFormat={}{0:dd/MM/yyyy}, TargetNullValue='Không có'}" Width="120" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
-                </TabItem>
-            </TabControl>
-        </Border>
+                    <!-- Actions -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Hủy" 
+                                Command="{Binding CloseDialogsCommand}" 
+                                Style="{StaticResource SecondaryButton}" 
+                                Width="100" 
+                                Margin="0,0,12,0" />
+                        <Button Content="Lưu thay đổi" 
+                                Command="{Binding SaveEditStudentCommand}" 
+                                Style="{StaticResource PrimaryButton}" 
+                                Width="120" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>

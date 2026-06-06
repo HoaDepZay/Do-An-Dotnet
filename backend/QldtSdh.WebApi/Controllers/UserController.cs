@@ -13,7 +13,7 @@ namespace QldtSdh.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN, STAFF")]
     public class UserController : ControllerBase
     {
         private readonly QldtSdhDbContext _context;
@@ -49,6 +49,7 @@ namespace QldtSdh.WebApi.Controllers
 
         // POST: api/user
         [HttpPost]
+        [Authorize(Roles = "ADMIN")]
         public ActionResult<UserDto> CreateUser([FromBody] CreateUserRequest request)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
@@ -98,6 +99,7 @@ namespace QldtSdh.WebApi.Controllers
 
         // PUT: api/user/{id}
         [HttpPut("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public IActionResult UpdateUser(int id, [FromBody] UpdateUserRequest request)
         {
             if (request == null)
@@ -129,6 +131,7 @@ namespace QldtSdh.WebApi.Controllers
 
         // PUT: api/user/{id}/toggle-status
         [HttpPut("{id}/toggle-status")]
+        [Authorize(Roles = "ADMIN")]
         public IActionResult ToggleStatus(int id)
         {
             var user = _context.Users.Find(id);
@@ -145,6 +148,7 @@ namespace QldtSdh.WebApi.Controllers
 
         // PUT: api/user/{id}/reset-password
         [HttpPut("{id}/reset-password")]
+        [Authorize(Roles = "ADMIN")]
         public IActionResult ResetPassword(int id, [FromBody] ResetPasswordRequest request)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.NewPassword))

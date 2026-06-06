@@ -41,7 +41,7 @@ namespace QldtSdh.Wpf.Services
             _httpClient.DefaultRequestHeaders.Remove("X-User-Name");
             _httpClient.DefaultRequestHeaders.Add("X-User-Name", 
                 !string.IsNullOrEmpty(_sessionService.Username) 
-                    ? _sessionService.Username 
+                    ? System.Net.WebUtility.UrlEncode(_sessionService.Username) 
                     : "System");
         }
 

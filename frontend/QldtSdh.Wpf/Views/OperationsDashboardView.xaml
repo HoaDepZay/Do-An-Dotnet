@@ -34,7 +34,7 @@
                                 Padding="{TemplateBinding Padding}">
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Title}" Foreground="#94A3B8" FontSize="11" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                <TextBlock Text="{Binding Value}" Foreground="#F8FAFC" FontSize="22" FontWeight="Bold" Margin="0,4,0,0" />
+                                <TextBlock Text="{Binding FormattedValue}" Foreground="#F8FAFC" FontSize="22" FontWeight="Bold" Margin="0,4,0,0" />
                             </StackPanel>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -42,6 +42,97 @@
                                 <Setter Property="Background" Value="#2D322D" />
                                 <Setter Property="BorderBrush" Value="#22C55E" />
                             </Trigger>
+                            <!-- Highlight Selected KPI Card Triggers -->
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Key}" Value="TOTAL_STUDENTS" />
+                                    <Condition Binding="{Binding DataContext.SelectedKpi.Key, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="TOTAL_STUDENTS" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Background" Value="#1C2F22" />
+                                <Setter Property="BorderBrush" Value="#22C55E" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Key}" Value="STUDENTS_STUDYING" />
+                                    <Condition Binding="{Binding DataContext.SelectedKpi.Key, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="STUDENTS_STUDYING" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Background" Value="#1C2F22" />
+                                <Setter Property="BorderBrush" Value="#22C55E" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Key}" Value="STUDENTS_GRADUATED" />
+                                    <Condition Binding="{Binding DataContext.SelectedKpi.Key, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="STUDENTS_GRADUATED" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Background" Value="#1C2F22" />
+                                <Setter Property="BorderBrush" Value="#22C55E" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Key}" Value="STUDENTS_SUSPENDED" />
+                                    <Condition Binding="{Binding DataContext.SelectedKpi.Key, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="STUDENTS_SUSPENDED" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Background" Value="#1C2F22" />
+                                <Setter Property="BorderBrush" Value="#22C55E" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Key}" Value="CASES_ACTIVE" />
+                                    <Condition Binding="{Binding DataContext.SelectedKpi.Key, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="CASES_ACTIVE" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Background" Value="#1C2F22" />
+                                <Setter Property="BorderBrush" Value="#22C55E" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Key}" Value="CASES_OVERDUE" />
+                                    <Condition Binding="{Binding DataContext.SelectedKpi.Key, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="CASES_OVERDUE" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Background" Value="#1C2F22" />
+                                <Setter Property="BorderBrush" Value="#22C55E" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Key}" Value="GRADUATED_GPA_AVG" />
+                                    <Condition Binding="{Binding DataContext.SelectedKpi.Key, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="GRADUATED_GPA_AVG" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Background" Value="#1C2F22" />
+                                <Setter Property="BorderBrush" Value="#22C55E" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Key}" Value="TUITION_UNPAID" />
+                                    <Condition Binding="{Binding DataContext.SelectedKpi.Key, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="TUITION_UNPAID" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Background" Value="#1C2F22" />
+                                <Setter Property="BorderBrush" Value="#22C55E" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Key}" Value="THESIS_ACTIVE" />
+                                    <Condition Binding="{Binding DataContext.SelectedKpi.Key, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="THESIS_ACTIVE" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Background" Value="#1C2F22" />
+                                <Setter Property="BorderBrush" Value="#22C55E" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Key}" Value="DEFENCE_SCORE_AVG" />
+                                    <Condition Binding="{Binding DataContext.SelectedKpi.Key, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="DEFENCE_SCORE_AVG" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Background" Value="#1C2F22" />
+                                <Setter Property="BorderBrush" Value="#22C55E" />
+                                <Setter Property="BorderThickness" Value="1.5" />
+                            </MultiDataTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -196,12 +287,16 @@
                             </Style>
                         </DataGrid.Resources>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Mã học viên" Binding="{Binding StudentCode}" Width="150" FontWeight="SemiBold" Foreground="#22C55E" />
-                            <DataGridTextColumn Header="Họ và tên" Binding="{Binding FullName}" Width="*" />
-                            <DataGridTextColumn Header="Ngày sinh" Binding="{Binding DOB, StringFormat={}{0:dd/MM/yyyy}}" Width="150" />
-                            <DataGridTextColumn Header="Chương trình học" Binding="{Binding ProgrammeName}" Width="300" />
-                            <DataGridTextColumn Header="Trạng thái" Binding="{Binding CurrentStatus}" Width="120" />
-                            <DataGridTemplateColumn Header="Hành động" Width="120">
+                            <DataGridTextColumn Header="Mã học viên" Binding="{Binding StudentCode}" Width="110" FontWeight="SemiBold" Foreground="#22C55E" />
+                            <DataGridTextColumn Header="Họ và tên" Binding="{Binding FullName}" Width="180" />
+                            <DataGridTextColumn Header="Ngày sinh" Binding="{Binding DOB, StringFormat={}{0:dd/MM/yyyy}}" Width="100" />
+                            <DataGridTextColumn Header="Chương trình học" Binding="{Binding ProgrammeName}" Width="180" />
+                            <DataGridTextColumn Header="Trạng thái" Binding="{Binding CurrentStatus}" Width="100" />
+                            <DataGridTextColumn Header="GPA" Binding="{Binding GPA, TargetNullValue='-'}" Width="60" />
+                            <DataGridTextColumn Header="Nợ học phí" Binding="{Binding TuitionDebt, StringFormat={}{0:N0}đ, TargetNullValue='-'}" Width="110" />
+                            <DataGridTextColumn Header="Đề tài luận văn" Binding="{Binding ThesisTitle, TargetNullValue='-'}" Width="*" />
+                            <DataGridTextColumn Header="Điểm bảo vệ" Binding="{Binding DefenceScore, TargetNullValue='-'}" Width="100" />
+                            <DataGridTemplateColumn Header="Hành động" Width="110">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Button Content="Xem hồ sơ" 

@@ -6,11 +6,49 @@
              xmlns:local="clr-namespace:QldtSdh.Wpf.Views"
              mc:Ignorable="d" 
              d:DesignHeight="700" d:DesignWidth="1100"
-             Background="#0B0F0D">
+             Background="{DynamicResource ThemeBlackBrush}">
 
     <UserControl.Resources>
         <!-- Converter -->
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <!-- Kanban Card DataTemplate -->
+        <DataTemplate x:Key="KanbanCardTemplate">
+            <Border Background="{DynamicResource ThemeBlackBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="8" 
+                    Padding="12" 
+                    Margin="0,0,0,10">
+                <StackPanel>
+                    <Grid Margin="0,0,0,6">
+                        <TextBlock Text="{Binding CaseCode}" FontWeight="Bold" Foreground="#22C55E" FontSize="12" />
+                        <Border HorizontalAlignment="Right" Background="{DynamicResource BorderDarkBrush}" Padding="6,2" CornerRadius="4">
+                            <TextBlock Text="{Binding Priority}" FontSize="10" Foreground="{DynamicResource TextWhiteBrush}" FontWeight="SemiBold" />
+                        </Border>
+                    </Grid>
+                    
+                    <TextBlock Text="{Binding Title}" Foreground="{DynamicResource TextWhiteBrush}" FontWeight="SemiBold" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,8" />
+                    
+                    <TextBlock Foreground="{DynamicResource TextMutedBrush}" FontSize="11" Margin="0,0,0,4">
+                        <Run Text="Học viên: " />
+                        <Run Text="{Binding StudentName}" FontWeight="SemiBold" Foreground="{DynamicResource TextWhiteBrush}" />
+                    </TextBlock>
+                    
+                    <TextBlock Foreground="{DynamicResource TextMutedBrush}" FontSize="11" Margin="0,0,0,10">
+                        <Run Text="Hạn: " />
+                        <Run Text="{Binding DueDate, StringFormat={}{0:dd/MM/yyyy}, TargetNullValue='Không có'}" FontWeight="SemiBold" Foreground="#EF4444" />
+                    </TextBlock>
+                    
+                    <Button Content="Chi tiết" 
+                            Command="{Binding DataContext.LoadCaseDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}"
+                            Style="{StaticResource TableActionButton}" 
+                            HorizontalAlignment="Stretch" 
+                            Height="28" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
     </UserControl.Resources>
 
     <Grid>
@@ -18,19 +56,21 @@
         <Grid Margin="30">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /> <!-- Header -->
-                <RowDefinition Height="*" />    <!-- Board DataGrid -->
+                <RowDefinition Height="Auto" /> <!-- Filters -->
+                <RowDefinition Height="Auto" /> <!-- View selector tabs -->
+                <RowDefinition Height="*" />    <!-- Active View Area -->
             </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <Grid Grid.Row="0" Margin="0,0,0,24">
+            <!-- 1. Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Quản lý Sự vụ (Case Management)" Foreground="#F8FAFC" FontSize="28" FontWeight="Bold" Margin="0,0,0,6"/>
-                    <TextBlock Text="Bảng quản lý quy trình hỗ trợ học viên sau đại học theo workflow 4 trạng thái" Foreground="#94A3B8" FontSize="14" />
+                    <TextBlock Text="Quản lý Sự vụ (Case Management)" Foreground="{DynamicResource TextWhiteBrush}" FontSize="28" FontWeight="Bold" Margin="0,0,0,6"/>
+                    <TextBlock Text="Bảng quản lý quy trình hỗ trợ học viên sau đại học theo workflow 4 trạng thái" Foreground="{DynamicResource TextMutedBrush}" FontSize="14" />
                 </StackPanel>
 
                 <Button Content="+ Tạo Case hỗ trợ mới" 
@@ -41,33 +81,143 @@
                         VerticalAlignment="Center" />
             </Grid>
 
-            <!-- Cases Grid -->
+            <!-- 2. Filter Panel -->
             <Border Grid.Row="1" 
-                    Background="#1A1D1A" 
-                    BorderBrush="#2D322D" 
+                    Background="{DynamicResource PanelDarkBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
                     BorderThickness="1" 
                     CornerRadius="12" 
-                    Padding="16">
-                <DataGrid ItemsSource="{Binding Cases}" 
+                    Padding="16" 
+                    Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />     <!-- Student Name -->
+                        <ColumnDefinition Width="150" />   <!-- Case Type -->
+                        <ColumnDefinition Width="130" />   <!-- Priority -->
+                        <ColumnDefinition Width="150" />   <!-- Assignee -->
+                        <ColumnDefinition Width="130" />   <!-- Status -->
+                        <ColumnDefinition Width="150" />   <!-- Due Date -->
+                        <ColumnDefinition Width="Auto" />  <!-- Actions (Reset) -->
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Student Name Filter -->
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <TextBlock Text="Học viên" Style="{StaticResource ModernLabel}" />
+                        <TextBox Text="{Binding FilterStudentName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBox}" Height="36" />
+                    </StackPanel>
+
+                    <!-- Case Type Filter -->
+                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                        <TextBlock Text="Loại sự vụ" Style="{StaticResource ModernLabel}" />
+                        <ComboBox SelectedValuePath="Content" SelectedValue="{Binding FilterCaseType}" Style="{StaticResource ModernComboBox}" Height="36">
+                            <ComboBoxItem Content="Tất cả" IsSelected="True" />
+                            <ComboBoxItem Content="Học tập" />
+                            <ComboBoxItem Content="Học phí" />
+                            <ComboBoxItem Content="Luận văn" />
+                            <ComboBoxItem Content="Khác" />
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Priority Filter -->
+                    <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                        <TextBlock Text="Mức độ ưu tiên" Style="{StaticResource ModernLabel}" />
+                        <ComboBox SelectedValuePath="Content" SelectedValue="{Binding FilterPriority}" Style="{StaticResource ModernComboBox}" Height="36">
+                            <ComboBoxItem Content="Tất cả" IsSelected="True" />
+                            <ComboBoxItem Content="Low" />
+                            <ComboBoxItem Content="Medium" />
+                            <ComboBoxItem Content="High" />
+                            <ComboBoxItem Content="Critical" />
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Assignee Filter -->
+                    <StackPanel Grid.Column="3" Margin="0,0,10,0">
+                        <TextBlock Text="Cán bộ xử lý" Style="{StaticResource ModernLabel}" />
+                        <TextBox Text="{Binding FilterAssignee, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ModernTextBox}" Height="36" />
+                    </StackPanel>
+
+                    <!-- Status Filter -->
+                    <StackPanel Grid.Column="4" Margin="0,0,10,0">
+                        <TextBlock Text="Trạng thái" Style="{StaticResource ModernLabel}" />
+                        <ComboBox SelectedValuePath="Content" SelectedValue="{Binding FilterStatus}" Style="{StaticResource ModernComboBox}" Height="36">
+                            <ComboBoxItem Content="Tất cả" IsSelected="True" />
+                            <ComboBoxItem Content="Created" />
+                            <ComboBoxItem Content="Assigned" />
+                            <ComboBoxItem Content="Processing" />
+                            <ComboBoxItem Content="Closed" />
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Due Date Filter -->
+                    <StackPanel Grid.Column="5" Margin="0,0,10,0">
+                        <TextBlock Text="Hạn xử lý" Style="{StaticResource ModernLabel}" />
+                        <DatePicker SelectedDate="{Binding FilterDueDate}" Height="36" BorderBrush="{DynamicResource BorderDarkBrush}" Padding="6,2" />
+                    </StackPanel>
+
+                    <!-- Actions -->
+                    <Button Content="Xóa Bộ Lọc" 
+                            Command="{Binding ClearFiltersCommand}"
+                            Style="{StaticResource SecondaryButton}" 
+                            Height="36" 
+                            Width="100" 
+                            VerticalAlignment="Bottom"
+                            Grid.Column="6" />
+                </Grid>
+            </Border>
+
+            <!-- 3. View Mode Selector Tabs -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,16">
+                <RadioButton Content="📋  Danh sách" 
+                             GroupName="ViewModeGroup" 
+                             IsChecked="True" 
+                             Style="{StaticResource NavButton}" 
+                             Height="38" 
+                             Padding="12,0" 
+                             Margin="0,0,12,0"
+                             x:Name="RbList" />
+                <RadioButton Content="📊  Kanban" 
+                             GroupName="ViewModeGroup" 
+                             Style="{StaticResource NavButton}" 
+                             Height="38" 
+                             Padding="12,0" 
+                             Margin="0,0,12,0"
+                             x:Name="RbKanban" />
+                <RadioButton Content="📅  Lịch sự vụ" 
+                             GroupName="ViewModeGroup" 
+                             Style="{StaticResource NavButton}" 
+                             Height="38" 
+                             Padding="12,0"
+                             x:Name="RbCalendar" />
+            </StackPanel>
+
+            <!-- 4. List View Panel -->
+            <Border Grid.Row="3" 
+                    Background="{DynamicResource PanelDarkBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="12" 
+                    Padding="16"
+                    Visibility="{Binding IsChecked, ElementName=RbList, Converter={StaticResource BoolToVis}}">
+                <DataGrid ItemsSource="{Binding FilteredCases}" 
                           AutoGenerateColumns="False" 
                           CanUserAddRows="False"
                           IsReadOnly="True"
                           Background="Transparent"
                           BorderThickness="0"
                           GridLinesVisibility="Horizontal"
-                          HorizontalGridLinesBrush="#2D322D"
-                          RowBackground="#1A1D1A"
-                          AlternatingRowBackground="#0B0F0D"
-                          Foreground="#E2E8F0"
+                          HorizontalGridLinesBrush="{DynamicResource BorderDarkBrush}"
+                          RowBackground="{DynamicResource PanelDarkBrush}"
+                          AlternatingRowBackground="{DynamicResource ThemeBlackBrush}"
+                          Foreground="{DynamicResource TextWhiteBrush}"
                           FontSize="13"
                           RowHeight="40">
                     <DataGrid.Resources>
                         <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="#1A1D1A" />
-                            <Setter Property="Foreground" Value="#94A3B8" />
+                            <Setter Property="Background" Value="{DynamicResource PanelDarkBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
                             <Setter Property="FontWeight" Value="SemiBold" />
                             <Setter Property="BorderThickness" Value="0,0,0,1" />
-                            <Setter Property="BorderBrush" Value="#2D322D" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource BorderDarkBrush}" />
                             <Setter Property="Padding" Value="10,8" />
                         </Style>
                         <Style TargetType="DataGridCell">
@@ -98,7 +248,7 @@
                         <DataGridTextColumn Header="Độ ưu tiên" Binding="{Binding Priority}" Width="110" FontWeight="SemiBold" />
                         <DataGridTextColumn Header="Cán bộ xử lý" Binding="{Binding Assignee, TargetNullValue='Chưa phân công'}" Width="150" />
                         
-                        <!-- Status Column with specific colors in Binding or Trigger if needed, text is enough -->
+                        <!-- Status Column -->
                         <DataGridTextColumn Header="Trạng thái" Binding="{Binding Status}" Width="120" FontWeight="Bold" />
                         
                         <DataGridTextColumn Header="Hạn xử lý" Binding="{Binding DueDate, StringFormat={}{0:dd/MM/yyyy}, TargetNullValue='Không có'}" Width="120" />
@@ -118,13 +268,250 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </Border>
+
+            <!-- 5. Kanban View Panel -->
+            <Grid Grid.Row="3" 
+                  Visibility="{Binding IsChecked, ElementName=RbKanban, Converter={StaticResource BoolToVis}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" /> <!-- Created -->
+                    <ColumnDefinition Width="*" /> <!-- Assigned -->
+                    <ColumnDefinition Width="*" /> <!-- Processing -->
+                    <ColumnDefinition Width="*" /> <!-- Closed -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Created Column -->
+                <Border Grid.Column="0" Background="{DynamicResource PanelDarkBrush}" BorderBrush="{DynamicResource BorderDarkBrush}" BorderThickness="1" CornerRadius="12" Margin="0,0,8,0" Padding="12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Margin="0,0,0,12" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}">
+                            <Run Text="Mới Tạo (" />
+                            <Run Text="{Binding KanbanCreated.Count, Mode=OneWay}" />
+                            <Run Text=")" />
+                        </TextBlock>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding KanbanCreated}" ItemTemplate="{StaticResource KanbanCardTemplate}" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <!-- Assigned Column -->
+                <Border Grid.Column="1" Background="{DynamicResource PanelDarkBrush}" BorderBrush="{DynamicResource BorderDarkBrush}" BorderThickness="1" CornerRadius="12" Margin="8,0,8,0" Padding="12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Margin="0,0,0,12" FontSize="14" FontWeight="Bold" Foreground="#3B82F6">
+                            <Run Text="Đã Phân Công (" />
+                            <Run Text="{Binding KanbanAssigned.Count, Mode=OneWay}" />
+                            <Run Text=")" />
+                        </TextBlock>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding KanbanAssigned}" ItemTemplate="{StaticResource KanbanCardTemplate}" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <!-- Processing Column -->
+                <Border Grid.Column="2" Background="{DynamicResource PanelDarkBrush}" BorderBrush="{DynamicResource BorderDarkBrush}" BorderThickness="1" CornerRadius="12" Margin="8,0,8,0" Padding="12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Margin="0,0,0,12" FontSize="14" FontWeight="Bold" Foreground="#F59E0B">
+                            <Run Text="Đang Xử Lý (" />
+                            <Run Text="{Binding KanbanProcessing.Count, Mode=OneWay}" />
+                            <Run Text=")" />
+                        </TextBlock>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding KanbanProcessing}" ItemTemplate="{StaticResource KanbanCardTemplate}" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+
+                <!-- Closed Column -->
+                <Border Grid.Column="3" Background="{DynamicResource PanelDarkBrush}" BorderBrush="{DynamicResource BorderDarkBrush}" BorderThickness="1" CornerRadius="12" Margin="8,0,0,0" Padding="12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Margin="0,0,0,12" FontSize="14" FontWeight="Bold" Foreground="#10B981">
+                            <Run Text="Đã Đóng (" />
+                            <Run Text="{Binding KanbanClosed.Count, Mode=OneWay}" />
+                            <Run Text=")" />
+                        </TextBlock>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding KanbanClosed}" ItemTemplate="{StaticResource KanbanCardTemplate}" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- 6. Calendar View Panel -->
+            <Border Grid.Row="3" 
+                    Background="{DynamicResource PanelDarkBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="12" 
+                    Padding="16"
+                    Visibility="{Binding IsChecked, ElementName=RbCalendar, Converter={StaticResource BoolToVis}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" /> <!-- Month Switcher -->
+                        <RowDefinition Height="Auto" /> <!-- Day headers -->
+                        <RowDefinition Height="*" />    <!-- Calendar Days Grid -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Month Switcher Header -->
+                    <Grid Grid.Row="0" Margin="0,0,0,16">
+                        <Button Content="◀ Trước" 
+                                Command="{Binding PreviousMonthCommand}" 
+                                Style="{StaticResource SecondaryButton}" 
+                                Width="85" 
+                                HorizontalAlignment="Left" />
+                        <TextBlock Text="{Binding SelectedMonthLabel}" 
+                                   Foreground="{DynamicResource TextWhiteBrush}" 
+                                   FontSize="18" 
+                                   FontWeight="Bold" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center" />
+                        <Button Content="Sau ▶" 
+                                Command="{Binding NextMonthCommand}" 
+                                Style="{StaticResource SecondaryButton}" 
+                                Width="85" 
+                                HorizontalAlignment="Right" />
+                    </Grid>
+
+                    <!-- Days of Week Header -->
+                    <UniformGrid Grid.Row="1" Columns="7" Margin="0,0,0,8">
+                        <TextBlock Text="Thứ 2" Foreground="{DynamicResource TextMutedBrush}" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                        <TextBlock Text="Thứ 3" Foreground="{DynamicResource TextMutedBrush}" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                        <TextBlock Text="Thứ 4" Foreground="{DynamicResource TextMutedBrush}" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                        <TextBlock Text="Thứ 5" Foreground="{DynamicResource TextMutedBrush}" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                        <TextBlock Text="Thứ 6" Foreground="{DynamicResource TextMutedBrush}" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                        <TextBlock Text="Thứ 7" Foreground="{DynamicResource TextMutedBrush}" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                        <TextBlock Text="Chủ nhật" Foreground="#EF4444" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                    </UniformGrid>
+
+                    <!-- Days Grid -->
+                    <ItemsControl Grid.Row="2" ItemsSource="{Binding CalendarDays}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="7" Rows="6" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Command="{Binding DataContext.ShowDayCasesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="0"
+                                        Margin="0"
+                                        HorizontalContentAlignment="Stretch"
+                                        VerticalContentAlignment="Stretch"
+                                        Cursor="Hand">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border BorderBrush="{DynamicResource BorderDarkBrush}" 
+                                                    BorderThickness="0.5" 
+                                                    Background="{DynamicResource ThemeBlackBrush}"
+                                                    Padding="4">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
+                                                                <Setter Property="Opacity" Value="0.4" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                                                <Setter Property="BorderBrush" Value="#22C55E" />
+                                                                <Setter Property="BorderThickness" Value="1.5" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <ContentPresenter />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Day Number -->
+                                        <TextBlock Grid.Row="0" 
+                                                   Text="{Binding DayNumber}" 
+                                                   Foreground="{DynamicResource TextWhiteBrush}" 
+                                                   FontSize="11" 
+                                                   HorizontalAlignment="Right" 
+                                                   Margin="0,0,4,2" />
+
+                                        <!-- Active Cases List in this day -->
+                                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
+                                            <ItemsControl ItemsSource="{Binding ActiveCases}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <!-- Case tag in calendar -->
+                                                        <Button Command="{Binding DataContext.LoadCaseDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="#1A2E1A"
+                                                                BorderBrush="#22C55E"
+                                                                BorderThickness="1"
+                                                                Margin="0,1,0,1"
+                                                                Padding="4,1"
+                                                                Cursor="Hand">
+                                                            <Button.Template>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border Background="{TemplateBinding Background}" 
+                                                                            BorderBrush="{TemplateBinding BorderBrush}" 
+                                                                            BorderThickness="{TemplateBinding BorderThickness}" 
+                                                                            CornerRadius="3"
+                                                                            Padding="4,2">
+                                                                        <TextBlock Text="{Binding CaseCode}" 
+                                                                                   Foreground="White" 
+                                                                                   FontSize="9" 
+                                                                                   HorizontalAlignment="Center" 
+                                                                                   FontWeight="SemiBold"/>
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Button.Template>
+                                                            <Button.ToolTip>
+                                                                <ToolTip Background="{DynamicResource PanelDarkBrush}" BorderBrush="{DynamicResource BorderDarkBrush}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="{Binding CaseCode}" FontWeight="Bold" Foreground="#22C55E" />
+                                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="White" />
+                                                                        <TextBlock Text="{Binding StudentName, StringFormat='Học viên: {0}'}" Foreground="{DynamicResource TextMutedBrush}" />
+                                                                        <TextBlock Text="{Binding Status, StringFormat='Trạng thái: {0}'}" Foreground="{DynamicResource TextMutedBrush}" />
+                                                                    </StackPanel>
+                                                                </ToolTip>
+                                                            </Button.ToolTip>
+                                                        </Button>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
         </Grid>
 
         <!-- OVERLAY 1: Create Case Dialog -->
         <Grid Background="#B0000000" 
               Visibility="{Binding IsCreateCaseOpen, Converter={StaticResource BoolToVis}}">
-            <Border Background="#1A1D1A" 
-                    BorderBrush="#2D322D" 
+            <Border Background="{DynamicResource PanelDarkBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
                     BorderThickness="1" 
                     CornerRadius="16" 
                     Width="600" 
@@ -136,10 +523,10 @@
                 <StackPanel>
                     <!-- Header -->
                     <Grid Margin="0,0,0,20">
-                        <TextBlock Text="Tạo Case Hỗ Trợ Học Viên" Foreground="White" FontSize="20" FontWeight="Bold" />
+                        <TextBlock Text="Tạo Case Hỗ Trợ Học Viên" Foreground="{DynamicResource TextWhiteBrush}" FontSize="20" FontWeight="Bold" />
                         <Button Content="✕" 
                                 Command="{Binding CloseDialogsCommand}"
-                                Foreground="#94A3B8" 
+                                Foreground="{DynamicResource TextMutedBrush}" 
                                 Background="Transparent" 
                                 BorderThickness="0" 
                                 FontSize="18" 
@@ -196,12 +583,16 @@
 
                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
                             <TextBlock Text="Cán bộ xử lý" Style="{StaticResource ModernLabel}" />
-                            <TextBox Text="{Binding NewCaseAssignee}" Style="{StaticResource ModernTextBox}" />
+                            <ComboBox ItemsSource="{Binding StaffList}"
+                                      SelectedValue="{Binding NewCaseAssignee}"
+                                      SelectedValuePath="FullName"
+                                      DisplayMemberPath="FullName"
+                                      Style="{StaticResource ModernComboBox}" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Margin="8,0,0,0">
                             <TextBlock Text="Hạn xử lý" Style="{StaticResource ModernLabel}" />
-                            <DatePicker SelectedDate="{Binding NewCaseDueDate}" Height="38" Padding="10,0" BorderBrush="#2D322D" />
+                            <DatePicker SelectedDate="{Binding NewCaseDueDate}" Height="38" Padding="10,0" BorderBrush="{DynamicResource BorderDarkBrush}" />
                         </StackPanel>
                     </Grid>
 
@@ -230,8 +621,8 @@
         <!-- OVERLAY 2: Case Details Dialog -->
         <Grid Background="#B0000000" 
               Visibility="{Binding IsCaseDetailOpen, Converter={StaticResource BoolToVis}}">
-            <Border Background="#1A1D1A" 
-                    BorderBrush="#2D322D" 
+            <Border Background="{DynamicResource PanelDarkBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
                     BorderThickness="1" 
                     CornerRadius="16" 
                     Width="850" 
@@ -251,21 +642,21 @@
                     <!-- Header -->
                     <Grid Grid.Row="0" Margin="0,0,0,20">
                         <StackPanel>
-                            <TextBlock Foreground="White" FontSize="20" FontWeight="Bold">
+                            <TextBlock Foreground="{DynamicResource TextWhiteBrush}" FontSize="20" FontWeight="Bold">
                                 <Run Text="Chi tiết sự vụ - " />
                                 <Run Text="{Binding SelectedCase.CaseCode}" Foreground="#22C55E" />
                             </TextBlock>
-                            <TextBlock Foreground="#94A3B8" FontSize="13" Margin="0,2,0,0">
+                            <TextBlock Foreground="{DynamicResource TextMutedBrush}" FontSize="13" Margin="0,2,0,0">
                                 <Run Text="Học viên: " />
-                                <Run Text="{Binding SelectedCase.StudentName}" FontWeight="SemiBold" Foreground="#E2E8F0" />
+                                <Run Text="{Binding SelectedCase.StudentName}" FontWeight="SemiBold" Foreground="{DynamicResource TextWhiteBrush}" />
                                 <Run Text=" | Người phụ trách: " />
-                                <Run Text="{Binding SelectedCase.Assignee, TargetNullValue='Chưa có'}" FontWeight="SemiBold" Foreground="#E2E8F0" />
+                                <Run Text="{Binding SelectedCase.Assignee, TargetNullValue='Chưa có'}" FontWeight="SemiBold" Foreground="{DynamicResource TextWhiteBrush}" />
                             </TextBlock>
                         </StackPanel>
                         
                         <Button Content="✕" 
                                 Command="{Binding CloseDialogsCommand}"
-                                Foreground="#94A3B8" 
+                                Foreground="{DynamicResource TextMutedBrush}" 
                                 Background="Transparent" 
                                 BorderThickness="0" 
                                 FontSize="18" 
@@ -283,51 +674,57 @@
 
                         <!-- Left Panel: State controls -->
                         <Border Grid.Column="0" 
-                                Background="#0B0F0D" 
-                                BorderBrush="#2D322D" 
+                                Background="{DynamicResource ThemeBlackBrush}" 
+                                BorderBrush="{DynamicResource BorderDarkBrush}" 
                                 BorderThickness="1" 
                                 CornerRadius="8" 
                                 Padding="16" 
                                 Margin="0,0,16,0">
                             <StackPanel>
-                                <TextBlock Text="Thông tin yêu cầu" Foreground="White" FontWeight="Bold" FontSize="14" Margin="0,0,0,12" />
+                                <TextBlock Text="Thông tin yêu cầu" Foreground="{DynamicResource TextWhiteBrush}" FontWeight="Bold" FontSize="14" Margin="0,0,0,12" />
                                 
                                 <Grid Margin="0,0,0,8">
-                                    <TextBlock Text="Tiêu đề:" Foreground="#64748B" FontSize="13" />
-                                    <TextBlock Text="{Binding SelectedCase.Title}" TextWrapping="Wrap" Foreground="#E2E8F0" FontSize="13" Margin="70,0,0,0" />
+                                    <TextBlock Text="Tiêu đề:" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" />
+                                    <TextBlock Text="{Binding SelectedCase.Title}" TextWrapping="Wrap" Foreground="{DynamicResource TextWhiteBrush}" FontSize="13" Margin="70,0,0,0" />
                                 </Grid>
 
                                 <Grid Margin="0,0,0,8">
-                                    <TextBlock Text="Loại sự vụ:" Foreground="#64748B" FontSize="13" />
-                                    <TextBlock Text="{Binding SelectedCase.CaseType}" Foreground="#E2E8F0" FontSize="13" Margin="70,0,0,0" />
+                                    <TextBlock Text="Loại sự vụ:" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" />
+                                    <TextBlock Text="{Binding SelectedCase.CaseType}" Foreground="{DynamicResource TextWhiteBrush}" FontSize="13" Margin="70,0,0,0" />
                                 </Grid>
 
                                 <Grid Margin="0,0,0,8">
-                                    <TextBlock Text="Trạng thái:" Foreground="#64748B" FontSize="13" />
+                                    <TextBlock Text="Trạng thái:" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" />
                                     <TextBlock Text="{Binding SelectedCase.Status}" Foreground="#22C55E" FontWeight="Bold" FontSize="13" Margin="70,0,0,0" />
                                 </Grid>
 
                                 <Grid Margin="0,0,0,16">
-                                    <TextBlock Text="Hạn xử lý:" Foreground="#64748B" FontSize="13" />
+                                    <TextBlock Text="Hạn xử lý:" Foreground="{DynamicResource TextMutedBrush}" FontSize="13" />
                                     <TextBlock Text="{Binding SelectedCase.DueDate, StringFormat={}{0:dd/MM/yyyy}, TargetNullValue='Không có'}" Foreground="#EF4444" FontWeight="SemiBold" FontSize="13" Margin="70,0,0,0" />
                                 </Grid>
 
-                                <Separator Background="#2D322D" Margin="0,0,0,16" />
+                                <Separator Background="{DynamicResource BorderDarkBrush}" Margin="0,0,0,16" />
 
-                                <!-- Workflow transitions -->
-                                <TextBlock Text="Cập nhật trạng thái (Workflow)" Foreground="White" FontWeight="Bold" FontSize="14" Margin="0,0,0,10" />
+                                <!-- Assign handler -->
+                                <TextBlock Text="Gán cán bộ xử lý" Foreground="{DynamicResource TextWhiteBrush}" FontWeight="Bold" FontSize="14" Margin="0,0,0,10" />
                                 
                                 <StackPanel>
                                     <!-- Assign to self / Assign to User -->
-                                    <Grid Margin="0,0,0,12">
+                                    <Grid Margin="0,0,0,16">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBox x:Name="AssigneeInput" Text="Cán bộ A" Style="{StaticResource ModernTextBox}" Padding="8,6" FontSize="13" Height="34" />
+                                        <ComboBox x:Name="AssigneeInput" 
+                                                  ItemsSource="{Binding StaffList}"
+                                                  DisplayMemberPath="FullName"
+                                                  SelectedValuePath="FullName"
+                                                  SelectedValue="{Binding SelectedCaseAssignee, Mode=TwoWay}"
+                                                  Style="{StaticResource ModernComboBox}" 
+                                                  Height="34" />
                                         <Button Content="Gán xử lý" 
                                                 Command="{Binding AssignHandlerCommand}" 
-                                                CommandParameter="{Binding ElementName=AssigneeInput, Path=Text}"
+                                                CommandParameter="{Binding ElementName=AssigneeInput, Path=SelectedValue}"
                                                 Style="{StaticResource PrimaryButton}" 
                                                 Grid.Column="1" 
                                                 Padding="12,0" 
@@ -336,6 +733,8 @@
                                     </Grid>
 
                                     <!-- Transition buttons -->
+                                    <TextBlock Text="Cập nhật trạng thái (Workflow)" Foreground="{DynamicResource TextWhiteBrush}" FontWeight="Bold" FontSize="14" Margin="0,4,0,10" />
+
                                     <Button Content="Bắt đầu xử lý (Processing)" 
                                             Command="{Binding TransitionStatusCommand}" 
                                             CommandParameter="Processing"
@@ -361,8 +760,8 @@
 
                             <!-- Notes List -->
                             <Border Grid.Row="0" 
-                                    Background="#0B0F0D" 
-                                    BorderBrush="#2D322D" 
+                                    Background="{DynamicResource ThemeBlackBrush}" 
+                                    BorderBrush="{DynamicResource BorderDarkBrush}" 
                                     BorderThickness="1" 
                                     CornerRadius="8" 
                                     Padding="12" 
@@ -371,13 +770,13 @@
                                     <ItemsControl ItemsSource="{Binding SelectedCaseDetail.Notes}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Border BorderBrush="#2D322D" BorderThickness="0,0,0,1" Padding="0,8" Margin="0,0,0,8">
+                                                <Border BorderBrush="{DynamicResource BorderDarkBrush}" BorderThickness="0,0,0,1" Padding="0,8" Margin="0,0,0,8">
                                                     <StackPanel>
                                                         <Grid>
                                                             <TextBlock Text="{Binding CreatedBy}" Foreground="#22C55E" FontWeight="SemiBold" FontSize="13" />
-                                                            <TextBlock Text="{Binding CreatedAt, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Foreground="#64748B" FontSize="11" HorizontalAlignment="Right" />
+                                                            <TextBlock Text="{Binding CreatedAt, StringFormat={}{0:dd/MM/yyyy HH:mm}}" Foreground="{DynamicResource TextMutedBrush}" FontSize="11" HorizontalAlignment="Right" />
                                                         </Grid>
-                                                        <TextBlock Text="{Binding Content}" Foreground="#E2E8F0" FontSize="13" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                                        <TextBlock Text="{Binding Content}" Foreground="{DynamicResource TextWhiteBrush}" FontSize="13" Margin="0,4,0,0" TextWrapping="Wrap" />
                                                     </StackPanel>
                                                 </Border>
                                             </DataTemplate>
@@ -416,6 +815,112 @@
                             Grid.Row="2" 
                             HorizontalAlignment="Right" 
                             Width="100" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- OVERLAY 3: Day Cases List Dialog -->
+        <Grid Background="#B0000000" 
+              Visibility="{Binding IsDayCasesListOpen, Converter={StaticResource BoolToVis}}">
+            <Border Background="{DynamicResource PanelDarkBrush}" 
+                    BorderBrush="{DynamicResource BorderDarkBrush}" 
+                    BorderThickness="1" 
+                    CornerRadius="16" 
+                    Width="550" 
+                    Height="Auto" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center" 
+                    Padding="24"
+                    MaxHeight="500">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" /> <!-- Header -->
+                        <RowDefinition Height="*" />    <!-- Cases List -->
+                        <RowDefinition Height="Auto" /> <!-- Footer -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <Grid Grid.Row="0" Margin="0,0,0,16">
+                        <TextBlock Foreground="{DynamicResource TextWhiteBrush}" FontSize="18" FontWeight="Bold">
+                            <Run Text="Sự vụ ngày " />
+                            <Run Text="{Binding SelectedCalendarDay.Date, StringFormat='dd/MM/yyyy'}" Foreground="#22C55E" />
+                        </TextBlock>
+                        
+                        <Button Content="✕" 
+                                Command="{Binding CloseDialogsCommand}"
+                                Foreground="{DynamicResource TextMutedBrush}" 
+                                Background="Transparent" 
+                                BorderThickness="0" 
+                                FontSize="18" 
+                                HorizontalAlignment="Right" 
+                                VerticalAlignment="Top"
+                                Cursor="Hand" />
+                    </Grid>
+
+                    <!-- Cases List Scroll Area -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="350">
+                        <StackPanel>
+                            <!-- Empty State Message -->
+                            <TextBlock Text="Không có sự vụ nào hoạt động trong ngày này." 
+                                       Foreground="{DynamicResource TextMutedBrush}" 
+                                       HorizontalAlignment="Center" 
+                                       Margin="0,30" 
+                                       FontSize="14"
+                                       Visibility="{Binding NoSelectedDayCases, Converter={StaticResource BoolToVis}}" />
+                                       
+                            <!-- Cases List -->
+                            <ItemsControl ItemsSource="{Binding SelectedCalendarDay.ActiveCases}"
+                                          Visibility="{Binding HasSelectedDayCases, Converter={StaticResource BoolToVis}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{DynamicResource ThemeBlackBrush}" 
+                                                BorderBrush="{DynamicResource BorderDarkBrush}" 
+                                                BorderThickness="1" 
+                                                CornerRadius="8" 
+                                                Padding="12" 
+                                                Margin="0,0,0,8">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0">
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                        <TextBlock Text="{Binding CaseCode}" FontWeight="Bold" Foreground="#22C55E" Margin="0,0,8,0" />
+                                                        <Border Background="#1E3A8A" Padding="6,2" CornerRadius="4" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Priority}" Foreground="White" FontSize="10" FontWeight="SemiBold" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                    
+                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextWhiteBrush}" Margin="0,0,0,4" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding StudentName, StringFormat='Học viên: {0}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" />
+                                                    <TextBlock Text="{Binding Status, StringFormat='Trạng thái: {0}'}" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" />
+                                                </StackPanel>
+
+                                                <Button Content="Xem chi tiết" 
+                                                        Command="{Binding DataContext.LoadCaseDetailsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource TableActionButton}" 
+                                                        Grid.Column="1" 
+                                                        VerticalAlignment="Center" 
+                                                        Padding="12,6" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Footer Close Button -->
+                    <Button Content="Đóng" 
+                            Command="{Binding CloseDialogsCommand}" 
+                            Style="{StaticResource SecondaryButton}" 
+                            Grid.Row="2" 
+                            HorizontalAlignment="Right" 
+                            Width="100" 
+                            Margin="0,16,0,0" />
                 </Grid>
             </Border>
         </Grid>

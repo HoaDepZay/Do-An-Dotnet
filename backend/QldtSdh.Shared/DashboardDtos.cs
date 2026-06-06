@@ -11,6 +11,26 @@ namespace QldtSdh.Shared
         public string ValueType { get; set; } = "Count"; // Count, Percentage, Currency
         public string Description { get; set; } = string.Empty;
         public string IconType { get; set; } = "Default"; // Student, Graduation, Tuition, Thesis, Case
+
+        public string FormattedValue
+        {
+            get
+            {
+                if (ValueType == "Currency")
+                {
+                    return Value.ToString("N0") + "đ";
+                }
+                if (ValueType == "Percentage")
+                {
+                    return Value.ToString("F1") + "%";
+                }
+                if (Key == "GRADUATED_GPA_AVG" || Key == "DEFENCE_SCORE_AVG")
+                {
+                    return Value.ToString("F2");
+                }
+                return Value.ToString("N0");
+            }
+        }
     }
 
     public class DashboardSnapshotDto

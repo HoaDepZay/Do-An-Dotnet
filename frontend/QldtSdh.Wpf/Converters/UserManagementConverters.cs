@@ -50,7 +50,7 @@ namespace QldtSdh.Wpf.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             bool isActive = value is bool && (bool)value;
-            return isActive ? "Khóa" : "Kích hoạt";
+            return isActive ? "Khóa" : "Mở khóa";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
